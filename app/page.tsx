@@ -332,7 +332,7 @@ export default function Home() {
               className="p-2 w-full pr-8 border rounded-md focus:outline-blue-500"
             />
             {data.title && (
-              <button onClick={() => setData({...data, title: ''})} className="absolute right-2 top-2 text-gray-400 hover:text-gray-600">✕</button>
+              <button onClick={() => setData({...data, title: ''})} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-800 p-1 font-bold">✕</button>
             )}
           </div>
           <div className="relative">
@@ -345,7 +345,7 @@ export default function Home() {
               className="p-2 w-full pr-8 border rounded-md resize-none focus:outline-blue-500"
             />
             {data.bodyKr && (
-              <button onClick={() => setData({...data, bodyKr: ''})} className="absolute right-2 top-2 text-gray-400 hover:text-gray-600">✕</button>
+              <button onClick={() => setData({...data, bodyKr: ''})} className="absolute right-3 top-2 text-gray-400 hover:text-gray-800 p-1 font-bold">✕</button>
             )}
           </div>
           <div className="relative">
@@ -358,7 +358,7 @@ export default function Home() {
               className="p-2 w-full pr-8 border rounded-md focus:outline-blue-500"
             />
             {data.meta && (
-              <button onClick={() => setData({...data, meta: ''})} className="absolute right-2 top-2 text-gray-400 hover:text-gray-600">✕</button>
+              <button onClick={() => setData({...data, meta: ''})} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-800 p-1 font-bold">✕</button>
             )}
           </div>
         </div>
