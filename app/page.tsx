@@ -211,70 +211,7 @@ export default function Home() {
       {/* Sidebar / Editor */}
       <div className="w-full md:w-[420px] bg-white border-b md:border-b-0 md:border-r border-gray-200 p-6 flex flex-col gap-6 overflow-y-auto z-10 shadow-lg h-auto md:h-full">
         <h2 className="text-xl font-bold text-gray-800 pb-4 border-b">카드뉴스 에디터</h2>
-        
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-gray-700">텍스트 입력</label>
-          <input 
-            type="text" 
-            name="title" 
-            value={data.title} 
-            onChange={handleTextChange} 
-            placeholder="제목을 입력하세요." 
-            className="p-2 border rounded-md focus:outline-blue-500"
-          />
-          <textarea 
-            name="bodyKr" 
-            value={data.bodyKr} 
-            onChange={handleTextChange} 
-            placeholder="사진에 어울리는 본문을 입력해보세요." 
-            rows={4}
-            className="p-2 border rounded-md resize-none focus:outline-blue-500"
-          />
-          <input 
-            type="text" 
-            name="meta" 
-            value={data.meta} 
-            onChange={handleTextChange} 
-            placeholder="닉네임 또는 날짜를 입력해보세요." 
-            className="p-2 border rounded-md focus:outline-blue-500"
-          />
-        </div>
-
-        {getPhotoSlots() > 0 && (
-          <div className="flex flex-col gap-3">
-            <label className="font-semibold text-gray-700">사진 업로드</label>
-            {Array.from({ length: getPhotoSlots() }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <label className="flex-1 flex items-center justify-center p-3 border border-dashed border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 cursor-pointer text-gray-600 transition">
-                  <ImageIcon size={16} className="mr-2"/> 사진 {i + 1} 첨부
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={(e) => handlePhotoUpload(e, i)} 
-                    className="hidden" 
-                  />
-                </label>
-                {data.photos[i] && (
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded overflow-hidden border">
-                      <img src={data.photos[i]} className="w-full h-full object-cover" alt="preview" />
-                    </div>
-                    {originalPhotos[i] && (
-                      <button 
-                        onClick={() => { setCurrentCropIndex(i); setIsCropModalOpen(true); setCrop(undefined); }}
-                        className="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
-                      >
-                        크롭 수정
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="pt-4 border-t border-gray-100">
+        <div className="pb-2">
           <button 
             onClick={() => setIsAdvancedSettingsOpen(!isAdvancedSettingsOpen)}
             className="w-full py-2 bg-gray-50 text-gray-700 font-semibold rounded-md border border-gray-200 hover:bg-gray-100 transition flex justify-between items-center px-4"
@@ -342,6 +279,70 @@ export default function Home() {
           </div>
         )}
 
+
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-gray-700">텍스트 입력</label>
+          <input 
+            type="text" 
+            name="title" 
+            value={data.title} 
+            onChange={handleTextChange} 
+            placeholder="제목을 입력해보세요" 
+            className="p-2 border rounded-md focus:outline-blue-500"
+          />
+          <textarea 
+            name="bodyKr" 
+            value={data.bodyKr} 
+            onChange={handleTextChange} 
+            placeholder="사진에 어울리는 본문을 입력해보세요." 
+            rows={4}
+            className="p-2 border rounded-md resize-none focus:outline-blue-500"
+          />
+          <input 
+            type="text" 
+            name="meta" 
+            value={data.meta} 
+            onChange={handleTextChange} 
+            placeholder="닉네임 또는 날짜를 입력해보세요." 
+            className="p-2 border rounded-md focus:outline-blue-500"
+          />
+        </div>
+
+        {getPhotoSlots() > 0 && (
+          <div className="flex flex-col gap-3">
+            <label className="font-semibold text-gray-700">사진 업로드</label>
+            {Array.from({ length: getPhotoSlots() }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <label className="flex-1 flex items-center justify-center p-3 border border-dashed border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 cursor-pointer text-gray-600 transition">
+                  <ImageIcon size={16} className="mr-2"/> 사진 {i + 1} 첨부
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handlePhotoUpload(e, i)} 
+                    className="hidden" 
+                  />
+                </label>
+                {data.photos[i] && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded overflow-hidden border">
+                      <img src={data.photos[i]} className="w-full h-full object-cover" alt="preview" />
+                    </div>
+                    {originalPhotos[i] && (
+                      <button 
+                        onClick={() => { setCurrentCropIndex(i); setIsCropModalOpen(true); setCrop(undefined); }}
+                        className="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
+                      >
+                        크롭 수정
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        
         <div className="sticky bottom-0 bg-white pt-4 pb-2 mt-auto z-20 border-t md:border-t-0">
           <button 
             onClick={handleExport}
