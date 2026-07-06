@@ -4,7 +4,7 @@ import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import CardRenderer, { CardData, TemplateId } from '@/components/CardRenderer';
-import { toPng } from 'html-to-image';
+import { toJpeg } from 'html-to-image';
 import { Download, ImageIcon } from 'lucide-react';
 
 export default function Home() {
@@ -210,7 +210,7 @@ export default function Home() {
         // React가 UI를 업데이트(생성 중...)할 수 있도록 아주 약간 대기
         await new Promise(r => setTimeout(r, 100));
         
-        const dataUrl = await toPng(rendererRef.current, { cacheBust: true, pixelRatio: 1 });
+        const dataUrl = await toJpeg(rendererRef.current, { quality: 0.95, pixelRatio: 1 });
         
         if (isMobile()) {
           // 모바일: 팝업 띄우기
@@ -218,7 +218,7 @@ export default function Home() {
         } else {
           // PC: 즉시 다운로드
           const link = document.createElement('a');
-          link.download = `cardnews_${data.templateId}_${Date.now()}.png`;
+          link.download = `cardnews_${data.templateId}_${Date.now()}.jpg`;
           link.href = dataUrl;
           link.click();
         }
@@ -236,7 +236,7 @@ export default function Home() {
     try {
       const fetchRes = await fetch(resultImage);
       const blob = await fetchRes.blob();
-      const file = new File([blob], `cardnews_${data.templateId}_${Date.now()}.png`, { type: 'image/png' });
+      const file = new File([blob], `cardnews_${data.templateId}_${Date.now()}.jpg`, { type: 'image/jpeg' });
       
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
@@ -431,7 +431,7 @@ export default function Home() {
             disabled={isExporting}
             className={`w-2/3 ${isExporting ? 'bg-gray-500 cursor-not-allowed' : 'bg-black hover:bg-gray-800'} text-white font-bold py-3 rounded-md flex justify-center items-center gap-2 transition`}
           >
-            <Download size={18} /> {isExporting ? '생성 중...' : 'PNG로 저장하기'}
+            <Download size={18} /> {isExporting ? '생성 중...' : '이미지로 저장하기'}
           </button>
         </div>
 </div>
