@@ -7,12 +7,13 @@ import { Download, ImageIcon } from 'lucide-react';
 
 export default function Home() {
   const [data, setData] = useState<CardData>({
-    title: '나만의 카드뉴스 만들기',
-    bodyKr: '이곳에 내용을 입력해주세요. 사진을 업로드하고 템플릿을 변경하며 레이아웃을 확인해보세요.',
-    meta: '2026.05.18 · Cardnews',
+    title: 'title',
+    bodyKr: '사진에 어울리는 본문을 입력해보세요.',
+    meta: '닉네임 또는 날짜를 입력해보세요.',
     photos: [],
     templateId: 'P1_V1',
     fontFamily: 'Pretendard',
+    themeId: 'white',
   });
 
   const rendererRef = useRef<HTMLDivElement>(null);
@@ -34,6 +35,15 @@ export default function Home() {
     { value: 'Gowun Batang', label: 'Gowun Batang (고운 바탕)' },
     { value: 'Jua', label: 'Jua (배민 주아체)' },
     { value: 'Black Han Sans', label: 'Black Han Sans (검은고딕)' },
+  ];
+
+  const colorThemes = [
+    { id: 'white', label: 'White (기본)', bgColor: '#F8F9FA' },
+    { id: 'pistachio', label: 'Pistachio', bgColor: '#BADD7F' },
+    { id: 'columbia', label: 'Columbia Blue', bgColor: '#B9D9EB' },
+    { id: 'dartmouth', label: 'Dartmouth Green', bgColor: '#00693E' },
+    { id: 'electric', label: 'Electric Blue', bgColor: '#0029FF' },
+    { id: 'sunshine', label: 'Sunshine', bgColor: '#F9E793' },
   ];
 
   const handleTextChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -124,20 +134,39 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col gap-2">
+          <label className="font-semibold text-gray-700">배경 테마 설정</label>
+          <div className="flex flex-wrap gap-2 pt-1">
+            {colorThemes.map((theme) => (
+              <button
+                key={theme.id}
+                onClick={() => setData({ ...data, themeId: theme.id })}
+                className={`w-9 h-9 rounded-full border-2 transition-all cursor-pointer ${
+                  (data.themeId || 'white') === theme.id 
+                    ? 'border-blue-600 scale-110 shadow-md ring-2 ring-blue-300' 
+                    : 'border-gray-300 hover:scale-105'
+                }`}
+                style={{ backgroundColor: theme.bgColor }}
+                title={theme.label}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
           <label className="font-semibold text-gray-700">텍스트 입력</label>
           <input 
             type="text" 
             name="title" 
             value={data.title} 
             onChange={handleTextChange} 
-            placeholder="제목" 
+            placeholder="title" 
             className="p-2 border rounded-md focus:outline-blue-500"
           />
           <textarea 
             name="bodyKr" 
             value={data.bodyKr} 
             onChange={handleTextChange} 
-            placeholder="본문 (KR)" 
+            placeholder="사진에 어울리는 본문을 입력해보세요." 
             rows={4}
             className="p-2 border rounded-md resize-none focus:outline-blue-500"
           />
@@ -146,7 +175,7 @@ export default function Home() {
             name="meta" 
             value={data.meta} 
             onChange={handleTextChange} 
-            placeholder="메타 정보 (예: 장소 · 날짜)" 
+            placeholder="닉네임 또는 날짜를 입력해보세요." 
             className="p-2 border rounded-md focus:outline-blue-500"
           />
         </div>

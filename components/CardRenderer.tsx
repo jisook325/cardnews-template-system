@@ -2,6 +2,66 @@ import React from 'react';
 
 export type TemplateId = 'P0' | 'P1_V1' | 'P1_V2' | 'P2' | 'P3' | 'P4';
 
+export interface ColorTheme {
+  bgColor: string;
+  boxBgColor: string;
+  primaryTextColor: string;
+  secondaryTextColor: string;
+  metaTextColor: string;
+  borderThemeColor: string;
+}
+
+export const themes: Record<string, ColorTheme> = {
+  white: {
+    bgColor: '#F8F9FA',
+    boxBgColor: '#FFFFFF',
+    primaryTextColor: '#111827',
+    secondaryTextColor: '#4B5563',
+    metaTextColor: '#9CA3AF',
+    borderThemeColor: '#E5E7EB',
+  },
+  pistachio: {
+    bgColor: '#BADD7F',
+    boxBgColor: '#FFFFFF',
+    primaryTextColor: '#1E4620',
+    secondaryTextColor: '#1E4620',
+    metaTextColor: '#1E4620',
+    borderThemeColor: '#1E4620',
+  },
+  columbia: {
+    bgColor: '#B9D9EB',
+    boxBgColor: '#FFFFFF',
+    primaryTextColor: '#00693E',
+    secondaryTextColor: '#00693E',
+    metaTextColor: '#00693E',
+    borderThemeColor: '#00693E',
+  },
+  dartmouth: {
+    bgColor: '#00693E',
+    boxBgColor: '#005C36',
+    primaryTextColor: '#B9D9EB',
+    secondaryTextColor: '#B9D9EB',
+    metaTextColor: '#B9D9EB',
+    borderThemeColor: '#B9D9EB',
+  },
+  electric: {
+    bgColor: '#0029FF',
+    boxBgColor: '#1A3EFF',
+    primaryTextColor: '#FFFFFF',
+    secondaryTextColor: '#E5E7EB',
+    metaTextColor: '#D1D5DB',
+    borderThemeColor: '#FFFFFF',
+  },
+  sunshine: {
+    bgColor: '#F9E793',
+    boxBgColor: '#FFFFFF',
+    primaryTextColor: '#0029FF',
+    secondaryTextColor: '#0029FF',
+    metaTextColor: '#0029FF',
+    borderThemeColor: '#0029FF',
+  },
+};
+
 export interface CardData {
   title: string;
   bodyKr: string;
@@ -9,6 +69,7 @@ export interface CardData {
   photos: string[];
   templateId: TemplateId;
   fontFamily?: string;
+  themeId?: string;
 }
 
 interface Props {
@@ -17,26 +78,47 @@ interface Props {
 }
 
 export default function CardRenderer({ data, rendererRef }: Props) {
+  const theme = themes[data.themeId || 'white'] || themes.white;
+
   const cardStyle = {
     width: 1080,
     height: 1350,
-    fontFamily: data.fontFamily || 'Pretendard, sans-serif'
+    fontFamily: data.fontFamily || 'Pretendard, sans-serif',
+    backgroundColor: theme.bgColor,
   };
 
   return (
     <div
       ref={rendererRef}
-      className="relative overflow-hidden bg-[#F8F9FA]"
+      className="relative overflow-hidden"
       style={cardStyle}
     >
       {/* P0 Layout: 사진 없이 텍스트만 들어가는 형태 */}
       {data.templateId === 'P0' && (
-        <div className="absolute left-[50px] top-[45px] w-[980px] h-[1260px] flex flex-col justify-between p-[40px] bg-white shadow-sm border border-gray-100">
+        <div 
+          className="absolute left-[50px] top-[45px] w-[980px] h-[1260px] flex flex-col justify-between p-[40px] shadow-sm border"
+          style={{ backgroundColor: theme.boxBgColor, borderColor: theme.borderThemeColor }}
+        >
           <div>
-            <h1 className="text-[64px] font-bold text-[#111827] leading-tight mb-[40px] whitespace-pre-wrap">{data.title || '제목을 입력하세요'}</h1>
-            <p className="text-[40px] text-[#4B5563] leading-[1.6] whitespace-pre-wrap">{data.bodyKr || '본문을 입력하세요'}</p>
+            <h1 
+              className="text-[64px] font-bold leading-tight mb-[40px] whitespace-pre-wrap"
+              style={{ color: theme.primaryTextColor }}
+            >
+              {data.title || '제목을 입력하세요'}
+            </h1>
+            <p 
+              className="text-[40px] leading-[1.6] whitespace-pre-wrap"
+              style={{ color: theme.secondaryTextColor }}
+            >
+              {data.bodyKr || '본문을 입력하세요'}
+            </p>
           </div>
-          <div className="text-[28px] text-[#9CA3AF] font-medium">{data.meta || '메타 정보'}</div>
+          <div 
+            className="text-[28px] font-medium"
+            style={{ color: theme.metaTextColor }}
+          >
+            {data.meta || '메타 정보'}
+          </div>
         </div>
       )}
 
@@ -51,9 +133,24 @@ export default function CardRenderer({ data, rendererRef }: Props) {
             )}
           </div>
           <div className="absolute left-[35px] top-[1084px] w-[1010px] h-[230px] flex flex-col">
-            <h1 className="text-[56px] font-bold text-[#111827] leading-tight truncate mb-[16px]">{data.title || '제목을 입력하세요'}</h1>
-            <p className="text-[36px] text-[#4B5563] leading-[1.4] line-clamp-2">{data.bodyKr || '본문을 입력하세요'}</p>
-            <div className="text-[28px] text-[#9CA3AF] font-medium mt-auto">{data.meta || '메타 정보'}</div>
+            <h1 
+              className="text-[56px] font-bold leading-tight truncate mb-[16px]"
+              style={{ color: theme.primaryTextColor }}
+            >
+              {data.title || '제목을 입력하세요'}
+            </h1>
+            <p 
+              className="text-[36px] leading-[1.4] line-clamp-2"
+              style={{ color: theme.secondaryTextColor }}
+            >
+              {data.bodyKr || '본문을 입력하세요'}
+            </p>
+            <div 
+              className="text-[28px] font-medium mt-auto"
+              style={{ color: theme.metaTextColor }}
+            >
+              {data.meta || '메타 정보'}
+            </div>
           </div>
         </>
       )}
@@ -68,10 +165,28 @@ export default function CardRenderer({ data, rendererRef }: Props) {
               <span className="text-[48px] text-[#9CA3AF]">Photo 1</span>
             )}
           </div>
-          <div className="absolute left-[35px] top-[510px] w-[1010px] h-[804px] flex flex-col p-[40px] bg-white">
-            <h1 className="text-[64px] font-bold text-[#111827] leading-tight mb-[30px]">{data.title || '제목을 입력하세요'}</h1>
-            <p className="text-[40px] text-[#4B5563] leading-[1.6] whitespace-pre-wrap">{data.bodyKr || '본문을 입력하세요'}</p>
-            <div className="text-[28px] text-[#9CA3AF] font-medium mt-auto">{data.meta || '메타 정보'}</div>
+          <div 
+            className="absolute left-[35px] top-[510px] w-[1010px] h-[804px] flex flex-col p-[40px]"
+            style={{ backgroundColor: theme.boxBgColor }}
+          >
+            <h1 
+              className="text-[64px] font-bold leading-tight mb-[30px]"
+              style={{ color: theme.primaryTextColor }}
+            >
+              {data.title || '제목을 입력하세요'}
+            </h1>
+            <p 
+              className="text-[40px] leading-[1.6] whitespace-pre-wrap"
+              style={{ color: theme.secondaryTextColor }}
+            >
+              {data.bodyKr || '본문을 입력하세요'}
+            </p>
+            <div 
+              className="text-[28px] font-medium mt-auto"
+              style={{ color: theme.metaTextColor }}
+            >
+              {data.meta || '메타 정보'}
+            </div>
           </div>
         </>
       )}
@@ -94,9 +209,24 @@ export default function CardRenderer({ data, rendererRef }: Props) {
             )}
           </div>
           <div className="absolute left-[35px] top-[980px] w-[1010px] h-[334px] flex flex-col p-[16px]">
-            <h1 className="text-[56px] font-bold text-[#111827] leading-tight truncate mb-[16px]">{data.title || '제목을 입력하세요'}</h1>
-            <p className="text-[36px] text-[#4B5563] leading-[1.5] line-clamp-3">{data.bodyKr || '본문을 입력하세요'}</p>
-            <div className="text-[28px] text-[#9CA3AF] font-medium mt-auto">{data.meta || '메타 정보'}</div>
+            <h1 
+              className="text-[56px] font-bold leading-tight truncate mb-[16px]"
+              style={{ color: theme.primaryTextColor }}
+            >
+              {data.title || '제목을 입력하세요'}
+            </h1>
+            <p 
+              className="text-[36px] leading-[1.5] line-clamp-3"
+              style={{ color: theme.secondaryTextColor }}
+            >
+              {data.bodyKr || '본문을 입력하세요'}
+            </p>
+            <div 
+              className="text-[28px] font-medium mt-auto"
+              style={{ color: theme.metaTextColor }}
+            >
+              {data.meta || '메타 정보'}
+            </div>
           </div>
         </>
       )}
@@ -126,9 +256,24 @@ export default function CardRenderer({ data, rendererRef }: Props) {
             )}
           </div>
           <div className="absolute left-[35px] top-[980px] w-[1010px] h-[334px] flex flex-col p-[16px]">
-            <h1 className="text-[56px] font-bold text-[#111827] leading-tight truncate mb-[16px]">{data.title || '제목을 입력하세요'}</h1>
-            <p className="text-[36px] text-[#4B5563] leading-[1.5] line-clamp-3">{data.bodyKr || '본문을 입력하세요'}</p>
-            <div className="text-[28px] text-[#9CA3AF] font-medium mt-auto">{data.meta || '메타 정보'}</div>
+            <h1 
+              className="text-[56px] font-bold leading-tight truncate mb-[16px]"
+              style={{ color: theme.primaryTextColor }}
+            >
+              {data.title || '제목을 입력하세요'}
+            </h1>
+            <p 
+              className="text-[36px] leading-[1.5] line-clamp-3"
+              style={{ color: theme.secondaryTextColor }}
+            >
+              {data.bodyKr || '본문을 입력하세요'}
+            </p>
+            <div 
+              className="text-[28px] font-medium mt-auto"
+              style={{ color: theme.metaTextColor }}
+            >
+              {data.meta || '메타 정보'}
+            </div>
           </div>
         </>
       )}
@@ -149,9 +294,24 @@ export default function CardRenderer({ data, rendererRef }: Props) {
             {data.photos[3] ? <img src={data.photos[3]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">Photo 4</span>}
           </div>
           <div className="absolute left-[35px] top-[1065px] w-[1010px] h-[249px] flex flex-col p-[16px]">
-            <h1 className="text-[48px] font-bold text-[#111827] leading-tight truncate mb-[16px]">{data.title || '제목을 입력하세요'}</h1>
-            <p className="text-[32px] text-[#4B5563] leading-[1.4] line-clamp-2">{data.bodyKr || '본문을 입력하세요'}</p>
-            <div className="text-[24px] text-[#9CA3AF] font-medium mt-auto">{data.meta || '메타 정보'}</div>
+            <h1 
+              className="text-[48px] font-bold leading-tight truncate mb-[16px]"
+              style={{ color: theme.primaryTextColor }}
+            >
+              {data.title || '제목을 입력하세요'}
+            </h1>
+            <p 
+              className="text-[32px] leading-[1.4] line-clamp-2"
+              style={{ color: theme.secondaryTextColor }}
+            >
+              {data.bodyKr || '본문을 입력하세요'}
+            </p>
+            <div 
+              className="text-[24px] font-medium mt-auto"
+              style={{ color: theme.metaTextColor }}
+            >
+              {data.meta || '메타 정보'}
+            </div>
           </div>
         </>
       )}
