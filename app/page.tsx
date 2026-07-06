@@ -1,65 +1,198 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState, useRef, ChangeEvent } from 'react';
+import CardRenderer, { CardData, TemplateId } from '@/components/CardRenderer';
+import { toPng } from 'html-to-image';
+import { Download, ImageIcon } from 'lucide-react';
 
 export default function Home() {
+  const [data, setData] = useState<CardData>({
+    title: '나만의 카드뉴스 만들기',
+    bodyKr: '이곳에 내용을 입력해주세요. 사진을 업로드하고 템플릿을 변경하며 레이아웃을 확인해보세요.',
+    meta: '2026.05.18 · Cardnews',
+    photos: [],
+    templateId: 'P1_V1',
+    fontFamily: 'Pretendard',
+  });
+
+  const rendererRef = useRef<HTMLDivElement>(null);
+
+  const templates: { id: TemplateId, label: string }[] = [
+    { id: 'P0', label: '사진 없음 (P0)' },
+    { id: 'P1_V1', label: '비대칭 1장 (P1_V1)' },
+    { id: 'P1_V2', label: '상단 1장 (P1_V2)' },
+    { id: 'P2', label: '분할 2장 (P2)' },
+    { id: 'P3', label: '1+2 격자 (P3)' },
+    { id: 'P4', label: '2x2 격자 (P4)' },
+  ];
+
+  const fontFamilies = [
+    { value: 'Pretendard', label: 'Pretendard (기본 고딕)' },
+    { value: 'Noto Sans KR', label: 'Noto Sans KR (구글 고딕)' },
+    { value: 'Noto Serif KR', label: 'Noto Serif KR (구글 명조)' },
+    { value: 'GmarketSans', label: 'Gmarket Sans (헤드라인 고딕)' },
+    { value: 'Gowun Batang', label: 'Gowun Batang (고운 바탕)' },
+    { value: 'Jua', label: 'Jua (배민 주아체)' },
+    { value: 'Black Han Sans', label: 'Black Han Sans (검은고딕)' },
+  ];
+
+  const handleTextChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setData({ ...data, [e.target.name]: e.target.value });
+  };
+
+  const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          const newPhotos = [...data.photos];
+          newPhotos[index] = ev.target.result as string;
+          setData({ ...data, photos: newPhotos });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleExport = async () => {
+    if (rendererRef.current) {
+      try {
+        const dataUrl = await toPng(rendererRef.current, { cacheBust: true, pixelRatio: 1 });
+        const link = document.createElement('a');
+        link.download = `cardnews_${data.templateId}_${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (err) {
+        console.error('Export failed:', err);
+        alert('이미지 저장에 실패했습니다.');
+      }
+    }
+  };
+
+  const getPhotoSlots = () => {
+    switch (data.templateId) {
+      case 'P0': return 0;
+      case 'P1_V1':
+      case 'P1_V2': return 1;
+      case 'P2': return 2;
+      case 'P3': return 3;
+      case 'P4': return 4;
+      default: return 1;
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex h-screen bg-gray-100 overflow-hidden text-sm">
+      {/* Sidebar / Editor */}
+      <div className="w-[420px] bg-white border-r border-gray-200 p-6 flex flex-col gap-6 overflow-y-auto z-10 shadow-lg">
+        <h2 className="text-xl font-bold text-gray-800 pb-4 border-b">카드뉴스 에디터</h2>
+        
+        <div className="flex flex-col gap-3">
+          <label className="font-semibold text-gray-700">템플릿 선택</label>
+          <div className="grid grid-cols-2 gap-2">
+            {templates.map(tpl => (
+              <button
+                key={tpl.id}
+                onClick={() => setData({ ...data, templateId: tpl.id })}
+                className={`py-2 px-2 text-xs font-semibold rounded-md border text-center transition-colors ${
+                  data.templateId === tpl.id 
+                    ? 'bg-blue-600 text-white border-blue-600' 
+                    : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
+                }`}
+              >
+                {tpl.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-gray-700">글꼴 설정</label>
+          <select
+            name="fontFamily"
+            value={data.fontFamily || 'Pretendard'}
+            onChange={(e) => setData({ ...data, fontFamily: e.target.value })}
+            className="p-2 border rounded-md focus:outline-blue-500 bg-white"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {fontFamilies.map((font) => (
+              <option key={font.value} value={font.value}>
+                {font.label}
+              </option>
+            ))}
+          </select>
         </div>
-      </main>
+
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-gray-700">텍스트 입력</label>
+          <input 
+            type="text" 
+            name="title" 
+            value={data.title} 
+            onChange={handleTextChange} 
+            placeholder="제목" 
+            className="p-2 border rounded-md focus:outline-blue-500"
+          />
+          <textarea 
+            name="bodyKr" 
+            value={data.bodyKr} 
+            onChange={handleTextChange} 
+            placeholder="본문 (KR)" 
+            rows={4}
+            className="p-2 border rounded-md resize-none focus:outline-blue-500"
+          />
+          <input 
+            type="text" 
+            name="meta" 
+            value={data.meta} 
+            onChange={handleTextChange} 
+            placeholder="메타 정보 (예: 장소 · 날짜)" 
+            className="p-2 border rounded-md focus:outline-blue-500"
+          />
+        </div>
+
+        {getPhotoSlots() > 0 && (
+          <div className="flex flex-col gap-3">
+            <label className="font-semibold text-gray-700">사진 업로드</label>
+            {Array.from({ length: getPhotoSlots() }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <label className="flex-1 flex items-center justify-center p-3 border border-dashed border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 cursor-pointer text-gray-600 transition">
+                  <ImageIcon size={16} className="mr-2"/> 사진 {i + 1} 첨부
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handlePhotoUpload(e, i)} 
+                    className="hidden" 
+                  />
+                </label>
+                {data.photos[i] && (
+                  <div className="w-10 h-10 rounded overflow-hidden border">
+                    <img src={data.photos[i]} className="w-full h-full object-cover" alt="preview" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button 
+          onClick={handleExport}
+          className="mt-auto bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-md flex justify-center items-center gap-2 transition"
+        >
+          <Download size={18} /> PNG로 저장하기
+        </button>
+      </div>
+
+      {/* Preview Area */}
+      <div className="flex-1 flex items-center justify-center overflow-auto p-8 relative">
+        <div className="bg-gray-200 p-4 shadow-inner border border-gray-300">
+          <div className="relative" style={{ width: 1080 * 0.5, height: 1350 * 0.5 }}>
+            <div style={{ transform: 'scale(0.5)', transformOrigin: 'top left', width: 1080, height: 1350 }}>
+              <CardRenderer data={data} rendererRef={rendererRef} />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
