@@ -60,6 +60,38 @@ export const themes: Record<string, ColorTheme> = {
     metaTextColor: '#0029FF',
     borderThemeColor: '#0029FF',
   },
+  periwinkle: {
+    bgColor: '#AFC5FF',
+    boxBgColor: '#FFFFFF',
+    primaryTextColor: '#FD5959',
+    secondaryTextColor: '#FD5959',
+    metaTextColor: '#FD5959',
+    borderThemeColor: '#FD5959',
+  },
+  lemon: {
+    bgColor: '#FCFF82',
+    boxBgColor: '#FFFFFF',
+    primaryTextColor: '#FF9C6D',
+    secondaryTextColor: '#FF9C6D',
+    metaTextColor: '#FF9C6D',
+    borderThemeColor: '#FF9C6D',
+  },
+  cantaloupe: {
+    bgColor: '#FF9C6D',
+    boxBgColor: '#FFFFFF',
+    primaryTextColor: '#FCFF82',
+    secondaryTextColor: '#FCFF82',
+    metaTextColor: '#FCFF82',
+    borderThemeColor: '#FCFF82',
+  },
+  watermelon: {
+    bgColor: '#FD5959',
+    boxBgColor: '#FFFFFF',
+    primaryTextColor: '#AFC5FF',
+    secondaryTextColor: '#AFC5FF',
+    metaTextColor: '#AFC5FF',
+    borderThemeColor: '#AFC5FF',
+  },
 };
 
 export interface CardData {

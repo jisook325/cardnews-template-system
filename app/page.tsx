@@ -44,6 +44,10 @@ export default function Home() {
     { id: 'dartmouth', label: 'Dartmouth Green', bgColor: '#00693E' },
     { id: 'electric', label: 'Electric Blue', bgColor: '#0029FF' },
     { id: 'sunshine', label: 'Sunshine', bgColor: '#F9E793' },
+    { id: 'periwinkle', label: 'Periwinkle', bgColor: '#AFC5FF' },
+    { id: 'lemon', label: 'Lemon', bgColor: '#FCFF82' },
+    { id: 'cantaloupe', label: 'Cantaloupe', bgColor: '#FF9C6D' },
+    { id: 'watermelon', label: 'Watermelon', bgColor: '#FD5959' },
   ];
 
   const handleTextChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
