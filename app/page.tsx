@@ -24,6 +24,24 @@ export default function Home() {
   const [currentCropIndex, setCurrentCropIndex] = useState<number>(0);
   const imgRef = useRef<HTMLImageElement>(null);
 
+  const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(0.5);
+
+  useEffect(() => {
+    if (!previewContainerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        const scaleX = (width - 32) / 1080; 
+        const scaleY = (height - 32) / 1350;
+        setPreviewScale(Math.min(scaleX, scaleY, 1));
+      }
+    });
+    observer.observe(previewContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     const saved = localStorage.getItem('cardnews_editor_data');
     if (saved) {
@@ -189,65 +207,11 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen md:h-screen bg-gray-100 md:overflow-hidden text-sm">
+    <div className="flex flex-col-reverse md:flex-row min-h-screen md:h-screen bg-gray-100 md:overflow-hidden text-sm">
       {/* Sidebar / Editor */}
       <div className="w-full md:w-[420px] bg-white border-b md:border-b-0 md:border-r border-gray-200 p-6 flex flex-col gap-6 overflow-y-auto z-10 shadow-lg h-auto md:h-full">
         <h2 className="text-xl font-bold text-gray-800 pb-4 border-b">카드뉴스 에디터</h2>
         
-        <div className="flex flex-col gap-3">
-          <label className="font-semibold text-gray-700">템플릿 선택</label>
-          <div className="grid grid-cols-2 gap-2">
-            {templates.map(tpl => (
-              <button
-                key={tpl.id}
-                onClick={() => setData({ ...data, templateId: tpl.id })}
-                className={`py-2 px-2 text-xs font-semibold rounded-md border text-center transition-colors ${
-                  data.templateId === tpl.id 
-                    ? 'bg-blue-600 text-white border-blue-600' 
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
-                }`}
-              >
-                {tpl.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-gray-700">글꼴 설정</label>
-          <select
-            name="fontFamily"
-            value={data.fontFamily || 'Pretendard'}
-            onChange={(e) => setData({ ...data, fontFamily: e.target.value })}
-            className="p-2 border rounded-md focus:outline-blue-500 bg-white"
-          >
-            {fontFamilies.map((font) => (
-              <option key={font.value} value={font.value}>
-                {font.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-gray-700">배경 테마 설정</label>
-          <div className="flex flex-wrap gap-2 pt-1">
-            {colorThemes.map((theme) => (
-              <button
-                key={theme.id}
-                onClick={() => setData({ ...data, themeId: theme.id })}
-                className={`w-9 h-9 rounded-full border-2 transition-all cursor-pointer ${
-                  (data.themeId || 'white') === theme.id 
-                    ? 'border-blue-600 scale-110 shadow-md ring-2 ring-blue-300' 
-                    : 'border-gray-300 hover:scale-105'
-                }`}
-                style={{ backgroundColor: theme.bgColor }}
-                title={theme.label}
-              />
-            ))}
-          </div>
-        </div>
-
         <div className="flex flex-col gap-2">
           <label className="font-semibold text-gray-700">텍스트 입력</label>
           <input 
@@ -310,21 +274,92 @@ export default function Home() {
           </div>
         )}
 
-        <button 
-          onClick={handleExport}
-          className="mt-6 md:mt-auto bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-md flex justify-center items-center gap-2 transition shrink-0"
-        >
-          <Download size={18} /> PNG로 저장하기
-        </button>
-      </div>
+        <div className="pt-4 border-t border-gray-100">
+          <button 
+            onClick={() => setIsAdvancedSettingsOpen(!isAdvancedSettingsOpen)}
+            className="w-full py-2 bg-gray-50 text-gray-700 font-semibold rounded-md border border-gray-200 hover:bg-gray-100 transition flex justify-between items-center px-4"
+          >
+            <span>디자인 고급 설정 (템플릿, 글꼴, 테마)</span>
+            <span>{isAdvancedSettingsOpen ? '▲' : '▼'}</span>
+          </button>
+        </div>
+        
+        {isAdvancedSettingsOpen && (
+          <div className="flex flex-col gap-6 bg-gray-50 p-4 rounded-md border border-gray-100">
+        <div className="flex flex-col gap-3">
+          <label className="font-semibold text-gray-700">템플릿 선택</label>
+          <div className="grid grid-cols-2 gap-2">
+            {templates.map(tpl => (
+              <button
+                key={tpl.id}
+                onClick={() => setData({ ...data, templateId: tpl.id })}
+                className={`py-2 px-2 text-xs font-semibold rounded-md border text-center transition-colors ${
+                  data.templateId === tpl.id 
+                    ? 'bg-blue-600 text-white border-blue-600' 
+                    : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
+                }`}
+              >
+                {tpl.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-gray-700">글꼴 설정</label>
+          <select
+            name="fontFamily"
+            value={data.fontFamily || 'Pretendard'}
+            onChange={(e) => setData({ ...data, fontFamily: e.target.value })}
+            className="p-2 border rounded-md focus:outline-blue-500 bg-white"
+          >
+            {fontFamilies.map((font) => (
+              <option key={font.value} value={font.value}>
+                {font.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-gray-700">배경 테마 설정</label>
+          <div className="flex flex-wrap gap-2 pt-1">
+            {colorThemes.map((theme) => (
+              <button
+                key={theme.id}
+                onClick={() => setData({ ...data, themeId: theme.id })}
+                className={`w-9 h-9 rounded-full border-2 transition-all cursor-pointer ${
+                  (data.themeId || 'white') === theme.id 
+                    ? 'border-blue-600 scale-110 shadow-md ring-2 ring-blue-300' 
+                    : 'border-gray-300 hover:scale-105'
+                }`}
+                style={{ backgroundColor: theme.bgColor }}
+                title={theme.label}
+              />
+            ))}
+          </div>
+        </div>
+          </div>
+        )}
+
+        <div className="sticky bottom-0 bg-white pt-4 pb-2 mt-auto z-20 border-t md:border-t-0">
+          <button 
+            onClick={handleExport}
+            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-md flex justify-center items-center gap-2 transition"
+          >
+            <Download size={18} /> PNG로 저장하기
+          </button>
+        </div>
+</div>
 
       {/* Preview Area */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-8 relative min-h-[400px] md:min-h-0 overflow-auto">
-        <div className="bg-gray-200 p-4 shadow-inner border border-gray-300 max-w-full overflow-auto">
-          <div className="relative" style={{ width: 1080 * 0.5, height: 1350 * 0.5 }}>
-            <div style={{ transform: 'scale(0.5)', transformOrigin: 'top left', width: 1080, height: 1350 }}>
-              <CardRenderer data={data} rendererRef={rendererRef} />
-            </div>
+      <div 
+        ref={previewContainerRef}
+        className="flex-1 flex items-center justify-center p-4 relative min-h-[500px] md:min-h-0 bg-gray-200 overflow-hidden"
+      >
+        <div style={{ width: 1080 * previewScale, height: 1350 * previewScale }} className="relative shadow-2xl bg-white border border-gray-300">
+          <div style={{ transform: `scale(${previewScale})`, transformOrigin: 'top left', width: 1080, height: 1350 }}>
+            <CardRenderer data={data} rendererRef={rendererRef} />
           </div>
         </div>
       </div>
