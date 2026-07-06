@@ -9,7 +9,7 @@ import { Download, ImageIcon } from 'lucide-react';
 
 export default function Home() {
   const [data, setData] = useState<CardData>({
-    title: 'title',
+    title: '',
     bodyKr: '사진에 어울리는 본문을 입력해보세요.',
     meta: '닉네임 또는 날짜를 입력해보세요.',
     photos: [],
@@ -255,7 +255,7 @@ export default function Home() {
             name="title" 
             value={data.title} 
             onChange={handleTextChange} 
-            placeholder="title" 
+            placeholder="제목을 입력하세요." 
             className="p-2 border rounded-md focus:outline-blue-500"
           />
           <textarea 

@@ -136,20 +136,20 @@ export default function CardRenderer({ data, rendererRef }: Props) {
               className="text-[64px] font-bold leading-tight mb-[40px] whitespace-pre-wrap"
               style={{ color: theme.primaryTextColor }}
             >
-              {data.title || '제목을 입력하세요'}
+              {data.title}
             </h1>
             <p 
               className="text-[40px] leading-[1.6] whitespace-pre-wrap"
               style={{ color: theme.secondaryTextColor }}
             >
-              {data.bodyKr || '본문을 입력하세요'}
+              {data.bodyKr}
             </p>
           </div>
           <div 
             className="text-[28px] font-medium"
             style={{ color: theme.metaTextColor }}
           >
-            {data.meta || '메타 정보'}
+            {data.meta}
           </div>
         </div>
       )}
@@ -161,7 +161,7 @@ export default function CardRenderer({ data, rendererRef }: Props) {
             {data.photos[0] ? (
               <img src={data.photos[0]} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[48px] text-[#9CA3AF]">Photo 1</span>
+              <span className="text-[48px] text-[#9CA3AF]">사진 1</span>
             )}
           </div>
           <div className="absolute left-[35px] top-[1084px] w-[1010px] h-[230px] flex flex-col">
@@ -169,19 +169,19 @@ export default function CardRenderer({ data, rendererRef }: Props) {
               className="text-[56px] font-bold leading-tight truncate mb-[16px]"
               style={{ color: theme.primaryTextColor }}
             >
-              {data.title || '제목을 입력하세요'}
+              {data.title}
             </h1>
             <p 
               className="text-[36px] leading-[1.4] line-clamp-2"
               style={{ color: theme.secondaryTextColor }}
             >
-              {data.bodyKr || '본문을 입력하세요'}
+              {data.bodyKr}
             </p>
             <div 
               className="text-[28px] font-medium mt-auto"
               style={{ color: theme.metaTextColor }}
             >
-              {data.meta || '메타 정보'}
+              {data.meta}
             </div>
           </div>
         </>
@@ -194,7 +194,7 @@ export default function CardRenderer({ data, rendererRef }: Props) {
             {data.photos[0] ? (
               <img src={data.photos[0]} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[48px] text-[#9CA3AF]">Photo 1</span>
+              <span className="text-[48px] text-[#9CA3AF]">사진 1</span>
             )}
           </div>
           <div 
@@ -205,19 +205,19 @@ export default function CardRenderer({ data, rendererRef }: Props) {
               className="text-[64px] font-bold leading-tight mb-[30px]"
               style={{ color: theme.primaryTextColor }}
             >
-              {data.title || '제목을 입력하세요'}
+              {data.title}
             </h1>
             <p 
               className="text-[40px] leading-[1.6] whitespace-pre-wrap"
               style={{ color: theme.secondaryTextColor }}
             >
-              {data.bodyKr || '본문을 입력하세요'}
+              {data.bodyKr}
             </p>
             <div 
               className="text-[28px] font-medium mt-auto"
               style={{ color: theme.metaTextColor }}
             >
-              {data.meta || '메타 정보'}
+              {data.meta}
             </div>
           </div>
         </>
@@ -230,14 +230,14 @@ export default function CardRenderer({ data, rendererRef }: Props) {
             {data.photos[0] ? (
               <img src={data.photos[0]} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[48px] text-[#9CA3AF]">Photo 1</span>
+              <span className="text-[48px] text-[#9CA3AF]">사진 1</span>
             )}
           </div>
           <div className="absolute left-[35px] top-[510px] w-[1010px] h-[445px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
             {data.photos[1] ? (
               <img src={data.photos[1]} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[48px] text-[#9CA3AF]">Photo 2</span>
+              <span className="text-[48px] text-[#9CA3AF]">사진 2</span>
             )}
           </div>
           <div className="absolute left-[35px] top-[980px] w-[1010px] h-[334px] flex flex-col p-[16px]">
@@ -245,19 +245,19 @@ export default function CardRenderer({ data, rendererRef }: Props) {
               className="text-[56px] font-bold leading-tight truncate mb-[16px]"
               style={{ color: theme.primaryTextColor }}
             >
-              {data.title || '제목을 입력하세요'}
+              {data.title}
             </h1>
             <p 
               className="text-[36px] leading-[1.5] line-clamp-3"
               style={{ color: theme.secondaryTextColor }}
             >
-              {data.bodyKr || '본문을 입력하세요'}
+              {data.bodyKr}
             </p>
             <div 
               className="text-[28px] font-medium mt-auto"
               style={{ color: theme.metaTextColor }}
             >
-              {data.meta || '메타 정보'}
+              {data.meta}
             </div>
           </div>
         </>
@@ -270,21 +270,21 @@ export default function CardRenderer({ data, rendererRef }: Props) {
             {data.photos[0] ? (
               <img src={data.photos[0]} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[48px] text-[#9CA3AF]">Photo 1</span>
+              <span className="text-[48px] text-[#9CA3AF]">사진 1</span>
             )}
           </div>
           <div className="absolute left-[35px] top-[510px] w-[495px] h-[445px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
             {data.photos[1] ? (
               <img src={data.photos[1]} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[36px] text-[#9CA3AF]">Photo 2</span>
+              <span className="text-[36px] text-[#9CA3AF]">사진 2</span>
             )}
           </div>
           <div className="absolute left-[550px] top-[510px] w-[495px] h-[445px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
             {data.photos[2] ? (
               <img src={data.photos[2]} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[36px] text-[#9CA3AF]">Photo 3</span>
+              <span className="text-[36px] text-[#9CA3AF]">사진 3</span>
             )}
           </div>
           <div className="absolute left-[35px] top-[980px] w-[1010px] h-[334px] flex flex-col p-[16px]">
@@ -292,19 +292,19 @@ export default function CardRenderer({ data, rendererRef }: Props) {
               className="text-[56px] font-bold leading-tight truncate mb-[16px]"
               style={{ color: theme.primaryTextColor }}
             >
-              {data.title || '제목을 입력하세요'}
+              {data.title}
             </h1>
             <p 
               className="text-[36px] leading-[1.5] line-clamp-3"
               style={{ color: theme.secondaryTextColor }}
             >
-              {data.bodyKr || '본문을 입력하세요'}
+              {data.bodyKr}
             </p>
             <div 
               className="text-[28px] font-medium mt-auto"
               style={{ color: theme.metaTextColor }}
             >
-              {data.meta || '메타 정보'}
+              {data.meta}
             </div>
           </div>
         </>
@@ -314,35 +314,35 @@ export default function CardRenderer({ data, rendererRef }: Props) {
       {data.templateId === 'P4' && (
         <>
           <div className="absolute left-[35px] top-[35px] w-[495px] h-[495px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden">
-            {data.photos[0] ? <img src={data.photos[0]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">Photo 1</span>}
+            {data.photos[0] ? <img src={data.photos[0]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">사진 1</span>}
           </div>
           <div className="absolute left-[550px] top-[35px] w-[495px] h-[495px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden">
-            {data.photos[1] ? <img src={data.photos[1]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">Photo 2</span>}
+            {data.photos[1] ? <img src={data.photos[1]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">사진 2</span>}
           </div>
           <div className="absolute left-[35px] top-[550px] w-[495px] h-[495px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
-            {data.photos[2] ? <img src={data.photos[2]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">Photo 3</span>}
+            {data.photos[2] ? <img src={data.photos[2]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">사진 3</span>}
           </div>
           <div className="absolute left-[550px] top-[550px] w-[495px] h-[495px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
-            {data.photos[3] ? <img src={data.photos[3]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">Photo 4</span>}
+            {data.photos[3] ? <img src={data.photos[3]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">사진 4</span>}
           </div>
           <div className="absolute left-[35px] top-[1065px] w-[1010px] h-[249px] flex flex-col p-[16px]">
             <h1 
               className="text-[48px] font-bold leading-tight truncate mb-[16px]"
               style={{ color: theme.primaryTextColor }}
             >
-              {data.title || '제목을 입력하세요'}
+              {data.title}
             </h1>
             <p 
               className="text-[32px] leading-[1.4] line-clamp-2"
               style={{ color: theme.secondaryTextColor }}
             >
-              {data.bodyKr || '본문을 입력하세요'}
+              {data.bodyKr}
             </p>
             <div 
               className="text-[24px] font-medium mt-auto"
               style={{ color: theme.metaTextColor }}
             >
-              {data.meta || '메타 정보'}
+              {data.meta}
             </div>
           </div>
         </>
