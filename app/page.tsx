@@ -83,9 +83,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden text-sm">
+    <div className="flex flex-col md:flex-row min-h-screen md:h-screen bg-gray-100 md:overflow-hidden text-sm">
       {/* Sidebar / Editor */}
-      <div className="w-[420px] bg-white border-r border-gray-200 p-6 flex flex-col gap-6 overflow-y-auto z-10 shadow-lg">
+      <div className="w-full md:w-[420px] bg-white border-b md:border-b-0 md:border-r border-gray-200 p-6 flex flex-col gap-6 overflow-y-auto z-10 shadow-lg h-auto md:h-full">
         <h2 className="text-xl font-bold text-gray-800 pb-4 border-b">카드뉴스 에디터</h2>
         
         <div className="flex flex-col gap-3">
@@ -177,15 +177,15 @@ export default function Home() {
 
         <button 
           onClick={handleExport}
-          className="mt-auto bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-md flex justify-center items-center gap-2 transition"
+          className="mt-6 md:mt-auto bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-md flex justify-center items-center gap-2 transition shrink-0"
         >
           <Download size={18} /> PNG로 저장하기
         </button>
       </div>
 
       {/* Preview Area */}
-      <div className="flex-1 flex items-center justify-center overflow-auto p-8 relative">
-        <div className="bg-gray-200 p-4 shadow-inner border border-gray-300">
+      <div className="flex-1 flex items-center justify-center p-4 md:p-8 relative min-h-[400px] md:min-h-0 overflow-auto">
+        <div className="bg-gray-200 p-4 shadow-inner border border-gray-300 max-w-full overflow-auto">
           <div className="relative" style={{ width: 1080 * 0.5, height: 1350 * 0.5 }}>
             <div style={{ transform: 'scale(0.5)', transformOrigin: 'top left', width: 1080, height: 1350 }}>
               <CardRenderer data={data} rendererRef={rendererRef} />
