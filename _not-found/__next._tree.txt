@@ -1,2 +1,2 @@
-:HL["/cardnews-template-system/_next/static/chunks/0_fws~1ih4zyp.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"XMHHco7pqje--WquvRr3K"}
+:HL["/cardnews-template-system/_next/static/chunks/0ul5._w1v2t1t.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"YizqW9vIak0B7JM0gxiWM"}
