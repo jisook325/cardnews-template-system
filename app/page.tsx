@@ -198,6 +198,11 @@ export default function Home() {
     }
   };
 
+  const isMobile = () => {
+    if (typeof window === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  };
+
   const handleExport = async () => {
     if (rendererRef.current) {
       try {
@@ -206,7 +211,17 @@ export default function Home() {
         await new Promise(r => setTimeout(r, 100));
         
         const dataUrl = await toPng(rendererRef.current, { cacheBust: true, pixelRatio: 1 });
-        setResultImage(dataUrl);
+        
+        if (isMobile()) {
+          // 모바일: 팝업 띄우기
+          setResultImage(dataUrl);
+        } else {
+          // PC: 즉시 다운로드
+          const link = document.createElement('a');
+          link.download = `cardnews_${data.templateId}_${Date.now()}.png`;
+          link.href = dataUrl;
+          link.click();
+        }
       } catch (err) {
         console.error('Export failed:', err);
         alert('이미지 생성에 실패했습니다.');
