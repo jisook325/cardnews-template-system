@@ -20,20 +20,18 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: webapp/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
-        working-directory: webapp
 
       - name: Build
         run: npm run build
         env:
           GITHUB_PAGES: "true"
-        working-directory: webapp
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./webapp/out
+          publish_dir: ./out
