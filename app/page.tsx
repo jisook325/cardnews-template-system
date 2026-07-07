@@ -4,7 +4,7 @@ import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import CardRenderer, { CardData, TemplateId } from '@/components/CardRenderer';
-import { toJpeg } from 'html-to-image';
+import { generateCardImage } from '@/lib/canvasExport';
 import { Download, ImageIcon } from 'lucide-react';
 
 export default function Home() {
@@ -220,7 +220,8 @@ export default function Home() {
         // React가 UI를 업데이트(생성 중...)할 수 있도록 아주 약간 대기
         await new Promise(r => setTimeout(r, 100));
         
-        const dataUrl = await toJpeg(rendererRef.current, { quality: 0.95, pixelRatio: 1 });
+        // Native Canvas rendering avoids all HTML parsing delays
+        const dataUrl = await generateCardImage(data);
         
         if (isMobile()) {
           // 모바일: 팝업 띄우기
