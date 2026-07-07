@@ -173,7 +173,7 @@ export default function CardRenderer({ data, rendererRef, onPhotoClick }: Props)
               {data.title}
             </h1>
             <p 
-              className="text-[36px] leading-[1.4] line-clamp-2"
+              className="text-[36px] leading-[1.4] line-clamp-2 whitespace-pre-wrap"
               style={{ color: theme.secondaryTextColor }}
             >
               {data.bodyKr}
@@ -249,7 +249,7 @@ export default function CardRenderer({ data, rendererRef, onPhotoClick }: Props)
               {data.title}
             </h1>
             <p 
-              className="text-[36px] leading-[1.5] line-clamp-3"
+              className="text-[36px] leading-[1.5] line-clamp-3 whitespace-pre-wrap"
               style={{ color: theme.secondaryTextColor }}
             >
               {data.bodyKr}
@@ -296,7 +296,7 @@ export default function CardRenderer({ data, rendererRef, onPhotoClick }: Props)
               {data.title}
             </h1>
             <p 
-              className="text-[36px] leading-[1.5] line-clamp-3"
+              className="text-[36px] leading-[1.5] line-clamp-3 whitespace-pre-wrap"
               style={{ color: theme.secondaryTextColor }}
             >
               {data.bodyKr}
@@ -334,7 +334,7 @@ export default function CardRenderer({ data, rendererRef, onPhotoClick }: Props)
               {data.title}
             </h1>
             <p 
-              className="text-[32px] leading-[1.4] line-clamp-2"
+              className="text-[32px] leading-[1.4] line-clamp-2 whitespace-pre-wrap"
               style={{ color: theme.secondaryTextColor }}
             >
               {data.bodyKr}
