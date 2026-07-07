@@ -132,9 +132,11 @@ export default function Home() {
     const file = e.target.files?.[0];
     if (file) {
       const resized = await resizeImage(file);
-      const newOrig = [...originalPhotos];
-      newOrig[index] = resized;
-      setOriginalPhotos(newOrig);
+      setOriginalPhotos(prev => {
+        const newOrig = [...prev];
+        newOrig[index] = resized;
+        return newOrig;
+      });
       setCurrentCropIndex(index);
       setIsCropModalOpen(true);
       setCrop(undefined);
@@ -142,11 +144,17 @@ export default function Home() {
   };
 
   const getCroppedImg = () => {
-    if (!imgRef.current || !crop || !crop.width || !crop.height) {
+    if (!crop || !crop.width || !crop.height) {
+      setData(prev => {
+        const newPhotos = [...prev.photos];
+        newPhotos[currentCropIndex] = originalPhotos[currentCropIndex];
+        return { ...prev, photos: newPhotos };
+      });
       setIsCropModalOpen(false);
       return;
     }
     const canvas = document.createElement('canvas');
+    if (!imgRef.current) return;
     const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
     const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
     canvas.width = crop.width * scaleX;
@@ -165,9 +173,11 @@ export default function Home() {
       crop.height * scaleY
     );
     const base64Image = canvas.toDataURL('image/jpeg', 0.9);
-    const newPhotos = [...data.photos];
-    newPhotos[currentCropIndex] = base64Image;
-    setData({ ...data, photos: newPhotos });
+    setData(prev => {
+      const newPhotos = [...prev.photos];
+      newPhotos[currentCropIndex] = base64Image;
+      return { ...prev, photos: newPhotos };
+    });
     setIsCropModalOpen(false);
   };
 
@@ -443,7 +453,7 @@ export default function Home() {
       >
         <div style={{ width: 1080 * previewScale, height: 1350 * previewScale }} className="relative shadow-2xl bg-white border border-gray-300">
           <div style={{ transform: `scale(${previewScale})`, transformOrigin: 'top left', width: 1080, height: 1350 }}>
-            <CardRenderer data={data} rendererRef={rendererRef} />
+            <CardRenderer data={data} rendererRef={rendererRef} onPhotoClick={(idx) => document.getElementById(`photo-upload-${idx}`)?.click()} />
           </div>
         </div>
       </div>

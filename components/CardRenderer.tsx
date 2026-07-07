@@ -107,9 +107,10 @@ export interface CardData {
 interface Props {
   data: CardData;
   rendererRef?: React.RefObject<HTMLDivElement | null>;
+  onPhotoClick?: (index: number) => void;
 }
 
-export default function CardRenderer({ data, rendererRef }: Props) {
+export default function CardRenderer({ data, rendererRef, onPhotoClick }: Props) {
   const theme = themes[data.themeId || 'white'] || themes.white;
 
   const cardStyle = {
@@ -157,7 +158,7 @@ export default function CardRenderer({ data, rendererRef }: Props) {
       {/* P1_V1 Layout: 사진 1장 비대칭 (좌측 쏠림) 구조 */}
       {data.templateId === 'P1_V1' && (
         <>
-          <div className="absolute left-[35px] top-[35px] w-[768px] h-[1024px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(0)} className="absolute left-[35px] top-[35px] w-[768px] h-[1024px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[0] ? (
               <img src={data.photos[0]} className="w-full h-full object-cover" />
             ) : (
@@ -190,7 +191,7 @@ export default function CardRenderer({ data, rendererRef }: Props) {
       {/* P1_V2 Layout: 사진 1장 상단 꽉 찬 구조 */}
       {data.templateId === 'P1_V2' && (
         <>
-          <div className="absolute left-[35px] top-[35px] w-[1010px] h-[450px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(0)} className="absolute left-[35px] top-[35px] w-[1010px] h-[450px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[0] ? (
               <img src={data.photos[0]} className="w-full h-full object-cover" />
             ) : (
@@ -199,7 +200,7 @@ export default function CardRenderer({ data, rendererRef }: Props) {
           </div>
           <div 
             className="absolute left-[35px] top-[510px] w-[1010px] h-[804px] flex flex-col p-[40px]"
-            style={{ backgroundColor: theme.boxBgColor }}
+            style={{ backgroundColor: "transparent" }}
           >
             <h1 
               className="text-[64px] font-bold leading-tight mb-[30px]"
@@ -226,14 +227,14 @@ export default function CardRenderer({ data, rendererRef }: Props) {
       {/* P2 Layout: 사진 2장 상하 분할 */}
       {data.templateId === 'P2' && (
         <>
-          <div className="absolute left-[35px] top-[35px] w-[1010px] h-[450px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(0)} className="absolute left-[35px] top-[35px] w-[1010px] h-[450px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[0] ? (
               <img src={data.photos[0]} className="w-full h-full object-cover" />
             ) : (
               <span className="text-[48px] text-[#9CA3AF]">사진 1</span>
             )}
           </div>
-          <div className="absolute left-[35px] top-[510px] w-[1010px] h-[445px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(1)} className="absolute left-[35px] top-[510px] w-[1010px] h-[445px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[1] ? (
               <img src={data.photos[1]} className="w-full h-full object-cover" />
             ) : (
@@ -266,21 +267,21 @@ export default function CardRenderer({ data, rendererRef }: Props) {
       {/* P3 Layout: 사진 3장 (1장 + 2장 격자) */}
       {data.templateId === 'P3' && (
         <>
-          <div className="absolute left-[35px] top-[35px] w-[1010px] h-[450px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(0)} className="absolute left-[35px] top-[35px] w-[1010px] h-[450px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[0] ? (
               <img src={data.photos[0]} className="w-full h-full object-cover" />
             ) : (
               <span className="text-[48px] text-[#9CA3AF]">사진 1</span>
             )}
           </div>
-          <div className="absolute left-[35px] top-[510px] w-[495px] h-[445px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(1)} className="absolute left-[35px] top-[510px] w-[495px] h-[445px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[1] ? (
               <img src={data.photos[1]} className="w-full h-full object-cover" />
             ) : (
               <span className="text-[36px] text-[#9CA3AF]">사진 2</span>
             )}
           </div>
-          <div className="absolute left-[550px] top-[510px] w-[495px] h-[445px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(2)} className="absolute left-[550px] top-[510px] w-[495px] h-[445px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[2] ? (
               <img src={data.photos[2]} className="w-full h-full object-cover" />
             ) : (
@@ -313,16 +314,16 @@ export default function CardRenderer({ data, rendererRef }: Props) {
       {/* P4 Layout: 사진 4장 2x2 격자 */}
       {data.templateId === 'P4' && (
         <>
-          <div className="absolute left-[35px] top-[35px] w-[495px] h-[495px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(0)} className="absolute left-[35px] top-[35px] w-[495px] h-[495px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[0] ? <img src={data.photos[0]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">사진 1</span>}
           </div>
-          <div className="absolute left-[550px] top-[35px] w-[495px] h-[495px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(1)} className="absolute left-[550px] top-[35px] w-[495px] h-[495px] bg-[#E5E7EB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[1] ? <img src={data.photos[1]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">사진 2</span>}
           </div>
-          <div className="absolute left-[35px] top-[550px] w-[495px] h-[495px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(2)} className="absolute left-[35px] top-[550px] w-[495px] h-[495px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[2] ? <img src={data.photos[2]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">사진 3</span>}
           </div>
-          <div className="absolute left-[550px] top-[550px] w-[495px] h-[495px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden">
+          <div onClick={() => onPhotoClick?.(3)} className="absolute left-[550px] top-[550px] w-[495px] h-[495px] bg-[#D1D5DB] flex items-center justify-center overflow-hidden cursor-pointer transition hover:opacity-90">
             {data.photos[3] ? <img src={data.photos[3]} className="w-full h-full object-cover" /> : <span className="text-[36px] text-[#9CA3AF]">사진 4</span>}
           </div>
           <div className="absolute left-[35px] top-[1065px] w-[1010px] h-[249px] flex flex-col p-[16px]">
