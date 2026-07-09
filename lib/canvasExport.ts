@@ -145,33 +145,33 @@ export async function generateCardImage(data: CardData): Promise<string> {
     // Title
     ctx.fillStyle = theme.primaryTextColor;
     ctx.font = `bold 64px ${fontFamily}`;
-    let y = drawTextKr(ctx, data.title, 90, 85, 900, 76, 5); // 76 roughly 64 * 1.2
+    let y = drawTextKr(ctx, data.title, 51, 51, 1010 - 32, 76, 5); // 76 roughly 64 * 1.2
     
     // Body
     y += 40;
     ctx.fillStyle = theme.secondaryTextColor;
     ctx.font = `40px ${fontFamily}`;
-    drawTextKr(ctx, data.bodyKr, 90, y, 900, 64, 12);
+    drawTextKr(ctx, data.bodyKr, 51, y, 1010 - 32, 64, 12);
     
     // Meta (bottom anchored)
     ctx.fillStyle = theme.metaTextColor;
     ctx.font = `500 28px ${fontFamily}`;
-    ctx.fillText(data.meta, 90, 45 + 1260 - 40 - 28);
+    ctx.fillText(data.meta, 51, 35 + 1280 - 16 - 28);
   }
   else if (data.templateId === 'P1_V1') {
-    drawSlot(imgs[0], 35, 35, 768, 1024, placeholderColor1, '사진 1');
+    drawSlot(imgs[0], 35, 35, 1010, 1024, placeholderColor1, '사진 1');
     
     ctx.fillStyle = theme.primaryTextColor;
     ctx.font = `bold 56px ${fontFamily}`;
-    drawTextKr(ctx, data.title, 35, 1084, 1010, 67, 1);
+    drawTextKr(ctx, data.title, 35 + 16, 1084 + 16, 1010 - 32, 67, 1);
     
     ctx.fillStyle = theme.secondaryTextColor;
     ctx.font = `36px ${fontFamily}`;
-    drawTextKr(ctx, data.bodyKr, 35, 1084 + 56 + 16, 1010, 50, 2);
+    drawTextKr(ctx, data.bodyKr, 35 + 16, 1084 + 16 + 56 + 16, 1010 - 32, 50, 2);
     
     ctx.fillStyle = theme.metaTextColor;
     ctx.font = `500 28px ${fontFamily}`;
-    ctx.fillText(data.meta, 35, 1084 + 230 - 28);
+    ctx.fillText(data.meta, 35 + 16, 1084 + 230 - 16 - 28);
   }
   else if (data.templateId === 'P1_V2') {
     drawSlot(imgs[0], 35, 35, 1010, 450, placeholderColor1, '사진 1');
@@ -181,15 +181,15 @@ export async function generateCardImage(data: CardData): Promise<string> {
     
     ctx.fillStyle = theme.primaryTextColor;
     ctx.font = `bold 64px ${fontFamily}`;
-    let y = drawTextKr(ctx, data.title, bx + 40, by + 40, 1010 - 80, 76, 3);
+    let y = drawTextKr(ctx, data.title, bx + 16, by + 16, 1010 - 32, 76, 3);
     
     ctx.fillStyle = theme.secondaryTextColor;
     ctx.font = `40px ${fontFamily}`;
-    drawTextKr(ctx, data.bodyKr, bx + 40, y + 30, 1010 - 80, 64, 10);
+    drawTextKr(ctx, data.bodyKr, bx + 16, y + 16, 1010 - 32, 64, 10);
     
     ctx.fillStyle = theme.metaTextColor;
     ctx.font = `500 28px ${fontFamily}`;
-    ctx.fillText(data.meta, bx + 40, by + 804 - 40 - 28);
+    ctx.fillText(data.meta, bx + 16, by + 804 - 16 - 28);
   }
   else if (data.templateId === 'P2') {
     drawSlot(imgs[0], 35, 35, 1010, 450, placeholderColor1, '사진 1');

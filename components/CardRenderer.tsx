@@ -129,8 +129,8 @@ export default function CardRenderer({ data, rendererRef, onPhotoClick }: Props)
       {/* P0 Layout: 사진 없이 텍스트만 들어가는 형태 */}
       {data.templateId === 'P0' && (
         <div 
-          className="absolute left-[50px] top-[45px] w-[980px] h-[1260px] flex flex-col justify-between p-[40px] shadow-sm border"
-          style={{ backgroundColor: "transparent", borderColor: theme.borderThemeColor }}
+          className="absolute left-[35px] top-[35px] w-[1010px] h-[1280px] flex flex-col justify-between p-[16px]"
+          style={{ backgroundColor: "transparent" }}
         >
           <div>
             <h1 
@@ -165,7 +165,7 @@ export default function CardRenderer({ data, rendererRef, onPhotoClick }: Props)
               <span className="text-[48px] text-[#9CA3AF]">사진 1</span>
             )}
           </div>
-          <div className="absolute left-[35px] top-[1084px] w-[1010px] h-[230px] flex flex-col">
+          <div className="absolute left-[35px] top-[1084px] w-[1010px] h-[230px] flex flex-col p-[16px]">
             <h1 
               className="text-[56px] font-bold leading-tight truncate mb-[16px]"
               style={{ color: theme.primaryTextColor }}
@@ -199,7 +199,7 @@ export default function CardRenderer({ data, rendererRef, onPhotoClick }: Props)
             )}
           </div>
           <div 
-            className="absolute left-[35px] top-[510px] w-[1010px] h-[804px] flex flex-col p-[40px]"
+            className="absolute left-[35px] top-[510px] w-[1010px] h-[804px] flex flex-col p-[16px]"
             style={{ backgroundColor: "transparent" }}
           >
             <h1 
