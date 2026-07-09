@@ -79,18 +79,18 @@ export const themes: Record<string, ColorTheme> = {
   cantaloupe: {
     bgColor: '#FF9C6D',
     boxBgColor: '#FFFFFF',
-    primaryTextColor: '#4A3000',
-    secondaryTextColor: '#7B5000',
-    metaTextColor: '#9C6500',
-    borderThemeColor: '#4A3000',
+    primaryTextColor: '#FFFFFF',
+    secondaryTextColor: '#431407',
+    metaTextColor: '#78350F',
+    borderThemeColor: '#FFFFFF',
   },
   watermelon: {
     bgColor: '#FD5959',
     boxBgColor: '#FFFFFF',
-    primaryTextColor: '#6E0000',
-    secondaryTextColor: '#9C1F1F',
-    metaTextColor: '#B93B3B',
-    borderThemeColor: '#6E0000',
+    primaryTextColor: '#FFFFFF',
+    secondaryTextColor: '#FFE4E6',
+    metaTextColor: '#FECDD3',
+    borderThemeColor: '#FFFFFF',
   },
 };
 
