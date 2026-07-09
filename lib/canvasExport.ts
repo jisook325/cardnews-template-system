@@ -141,8 +141,6 @@ export async function generateCardImage(data: CardData): Promise<string> {
 
   if (data.templateId === 'P0') {
     // P0 Layout
-    ctx.fillStyle = theme.boxBgColor;
-    ctx.fillRect(50, 45, 980, 1260);
     ctx.strokeStyle = theme.borderThemeColor;
     ctx.lineWidth = 1;
     ctx.strokeRect(50, 45, 980, 1260);

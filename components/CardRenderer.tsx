@@ -130,7 +130,7 @@ export default function CardRenderer({ data, rendererRef, onPhotoClick }: Props)
       {data.templateId === 'P0' && (
         <div 
           className="absolute left-[50px] top-[45px] w-[980px] h-[1260px] flex flex-col justify-between p-[40px] shadow-sm border"
-          style={{ backgroundColor: theme.boxBgColor, borderColor: theme.borderThemeColor }}
+          style={{ backgroundColor: "transparent", borderColor: theme.borderThemeColor }}
         >
           <div>
             <h1 
