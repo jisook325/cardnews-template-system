@@ -159,7 +159,7 @@ export async function generateCardImage(data: CardData): Promise<string> {
     ctx.fillText(data.meta, 51, 35 + 1280 - 16 - 28);
   }
   else if (data.templateId === 'P1_V1') {
-    drawSlot(imgs[0], 35, 35, 1010, 1024, placeholderColor1, '사진 1');
+    drawSlot(imgs[0], 35, 35, 768, 1024, placeholderColor1, '사진 1');
     
     ctx.fillStyle = theme.primaryTextColor;
     ctx.font = `bold 56px ${fontFamily}`;

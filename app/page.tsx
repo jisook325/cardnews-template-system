@@ -3,22 +3,37 @@
 import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import CardRenderer, { CardData, TemplateId } from '@/components/CardRenderer';
+import CardRenderer, { CardData, TemplateId, themes } from '@/components/CardRenderer';
 import { generateCardImage } from '@/lib/canvasExport';
 import { Download, ImageIcon } from 'lucide-react';
+import JSZip from 'jszip';
+
+export interface SlideItem {
+  id: string;
+  title: string;
+  bodyKr: string;
+  meta: string;
+  photos: string[];
+  originalPhotos: string[];
+  templateId: TemplateId;
+}
 
 export default function Home() {
-  const [data, setData] = useState<CardData>({
-    title: '',
-    bodyKr: '사진에 어울리는 본문을 입력해보세요.',
-    meta: '닉네임 또는 날짜를 입력해보세요.',
-    photos: [],
-    templateId: 'P1_V1',
-    fontFamily: 'Pretendard',
-    themeId: 'white',
-  });
+  const [slides, setSlides] = useState<SlideItem[]>([
+    {
+      id: 'slide-1',
+      title: '',
+      bodyKr: '사진에 어울리는 본문을 입력해보세요.',
+      meta: '닉네임 또는 날짜를 입력해보세요.',
+      photos: [],
+      originalPhotos: [],
+      templateId: 'P1_V1',
+    }
+  ]);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
+  const [fontFamily, setFontFamily] = useState<string>('Pretendard');
+  const [themeId, setThemeId] = useState<string>('white');
 
-  const [originalPhotos, setOriginalPhotos] = useState<string[]>([]);
   const [crop, setCrop] = useState<Crop>();
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [currentCropIndex, setCurrentCropIndex] = useState<number>(0);
@@ -28,8 +43,31 @@ export default function Home() {
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [previewScale, setPreviewScale] = useState(0.5);
 
-  const [resultImage, setResultImage] = useState<string | null>(null);
+  const [resultImages, setResultImages] = useState<string[]>([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingAll, setIsExportingAll] = useState(false);
+
+  const rendererRef = useRef<HTMLDivElement>(null);
+
+  const currentSlide = slides[currentSlideIndex] || slides[0] || {
+    id: 'slide-default',
+    title: '',
+    bodyKr: '',
+    meta: '',
+    photos: [],
+    originalPhotos: [],
+    templateId: 'P1_V1'
+  };
+
+  const currentCardData: CardData = {
+    title: currentSlide.title,
+    bodyKr: currentSlide.bodyKr,
+    meta: currentSlide.meta,
+    photos: currentSlide.photos,
+    templateId: currentSlide.templateId,
+    fontFamily,
+    themeId,
+  };
 
   useEffect(() => {
     if (!previewContainerRef.current) return;
@@ -50,21 +88,49 @@ export default function Home() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.data) setData(parsed.data);
-        if (parsed.originalPhotos) setOriginalPhotos(parsed.originalPhotos);
+        if (parsed.slides && Array.isArray(parsed.slides) && parsed.slides.length > 0) {
+          setSlides(parsed.slides);
+          if (parsed.fontFamily) setFontFamily(parsed.fontFamily);
+          if (parsed.themeId) setThemeId(parsed.themeId);
+          if (typeof parsed.currentSlideIndex === 'number') {
+            setCurrentSlideIndex(Math.min(parsed.currentSlideIndex, parsed.slides.length - 1));
+          }
+        } else if (parsed.data) {
+          // Backward compatibility migration from single slide data
+          setSlides([{
+            id: 'slide-1',
+            title: parsed.data.title || '',
+            bodyKr: parsed.data.bodyKr || '',
+            meta: parsed.data.meta || '',
+            photos: parsed.data.photos || [],
+            originalPhotos: parsed.originalPhotos || [],
+            templateId: parsed.data.templateId || 'P1_V1',
+          }]);
+          if (parsed.data.fontFamily) setFontFamily(parsed.data.fontFamily);
+          if (parsed.data.themeId) setThemeId(parsed.data.themeId);
+        }
       } catch (e) {}
     }
   }, []);
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      (window as unknown as { __cardnewsGenerate?: typeof generateCardImage }).__cardnewsGenerate = generateCardImage;
+    }
+  }, []);
+
+  useEffect(() => {
     try {
-      localStorage.setItem('cardnews_editor_data', JSON.stringify({ data, originalPhotos }));
+      localStorage.setItem('cardnews_editor_data', JSON.stringify({
+        slides,
+        currentSlideIndex,
+        fontFamily,
+        themeId,
+      }));
     } catch (e) {
       console.warn('Local storage save failed, possibly quota exceeded', e);
     }
-  }, [data, originalPhotos]);
-
-  const rendererRef = useRef<HTMLDivElement>(null);
+  }, [slides, currentSlideIndex, fontFamily, themeId]);
 
   const templates: { id: TemplateId, label: string }[] = [
     { id: 'P0', label: '사진 없음 (P0)' },
@@ -98,8 +164,61 @@ export default function Home() {
     { id: 'watermelon', label: 'Watermelon', bgColor: '#FD5959' },
   ];
 
+  const updateCurrentSlide = (patch: Partial<SlideItem>) => {
+    setSlides(prev => {
+      const next = [...prev];
+      if (!next[currentSlideIndex]) return prev;
+      next[currentSlideIndex] = { ...next[currentSlideIndex], ...patch };
+      return next;
+    });
+  };
+
   const handleTextChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setData({ ...data, [e.target.name]: e.target.value });
+    updateCurrentSlide({ [e.target.name]: e.target.value });
+  };
+
+  const handleAddSlide = () => {
+    const newSlide: SlideItem = {
+      id: `slide-${Date.now()}`,
+      title: '',
+      bodyKr: '사진에 어울리는 본문을 입력해보세요.',
+      meta: currentSlide.meta || '닉네임 또는 날짜를 입력해보세요.',
+      photos: [],
+      originalPhotos: [],
+      templateId: currentSlide.templateId,
+    };
+    setSlides(prev => {
+      const next = [...prev];
+      next.splice(currentSlideIndex + 1, 0, newSlide);
+      return next;
+    });
+    setCurrentSlideIndex(prev => prev + 1);
+  };
+
+  const handleDuplicateSlide = () => {
+    const newSlide: SlideItem = {
+      ...currentSlide,
+      id: `slide-${Date.now()}`,
+      photos: [...currentSlide.photos],
+      originalPhotos: [...currentSlide.originalPhotos],
+    };
+    setSlides(prev => {
+      const next = [...prev];
+      next.splice(currentSlideIndex + 1, 0, newSlide);
+      return next;
+    });
+    setCurrentSlideIndex(prev => prev + 1);
+  };
+
+  const handleDeleteSlide = () => {
+    if (slides.length <= 1) {
+      alert('최소 1장의 페이지는 유지해야 합니다.');
+      return;
+    }
+    if (window.confirm(`${currentSlideIndex + 1}번 페이지를 삭제하시겠습니까?`)) {
+      setSlides(prev => prev.filter((_, idx) => idx !== currentSlideIndex));
+      setCurrentSlideIndex(prev => Math.max(0, prev - 1));
+    }
   };
 
   const resizeImage = (file: File): Promise<string> => {
@@ -132,10 +251,15 @@ export default function Home() {
     const file = e.target.files?.[0];
     if (file) {
       const resized = await resizeImage(file);
-      setOriginalPhotos(prev => {
-        const newOrig = [...prev];
+      setSlides(prev => {
+        const next = [...prev];
+        if (!next[currentSlideIndex]) return prev;
+        const cur = { ...next[currentSlideIndex] };
+        const newOrig = [...cur.originalPhotos];
         newOrig[index] = resized;
-        return newOrig;
+        cur.originalPhotos = newOrig;
+        next[currentSlideIndex] = cur;
+        return next;
       });
       setCurrentCropIndex(index);
       setIsCropModalOpen(true);
@@ -145,10 +269,15 @@ export default function Home() {
 
   const getCroppedImg = () => {
     if (!crop || !crop.width || !crop.height) {
-      setData(prev => {
-        const newPhotos = [...prev.photos];
-        newPhotos[currentCropIndex] = originalPhotos[currentCropIndex];
-        return { ...prev, photos: newPhotos };
+      setSlides(prev => {
+        const next = [...prev];
+        if (!next[currentSlideIndex]) return prev;
+        const cur = { ...next[currentSlideIndex] };
+        const newPhotos = [...cur.photos];
+        newPhotos[currentCropIndex] = cur.originalPhotos[currentCropIndex];
+        cur.photos = newPhotos;
+        next[currentSlideIndex] = cur;
+        return next;
       });
       setIsCropModalOpen(false);
       return;
@@ -173,16 +302,21 @@ export default function Home() {
       crop.height * scaleY
     );
     const base64Image = canvas.toDataURL('image/jpeg', 0.9);
-    setData(prev => {
-      const newPhotos = [...prev.photos];
+    setSlides(prev => {
+      const next = [...prev];
+      if (!next[currentSlideIndex]) return prev;
+      const cur = { ...next[currentSlideIndex] };
+      const newPhotos = [...cur.photos];
       newPhotos[currentCropIndex] = base64Image;
-      return { ...prev, photos: newPhotos };
+      cur.photos = newPhotos;
+      next[currentSlideIndex] = cur;
+      return next;
     });
     setIsCropModalOpen(false);
   };
 
   const getCropAspect = () => {
-    switch (data.templateId) {
+    switch (currentSlide.templateId) {
       case 'P1_V1': return 0.75;
       case 'P1_V2': return 2.24;
       case 'P2': return 2.24;
@@ -193,18 +327,20 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    if (window.confirm('작성 중인 내용과 사진이 모두 초기화됩니다. 새로 만드시겠습니까?')) {
+    if (window.confirm('작성 중인 모든 페이지와 사진이 초기화됩니다. 새로 만드시겠습니까?')) {
       localStorage.removeItem('cardnews_editor_data');
-      setData({
+      setSlides([{
+        id: `slide-${Date.now()}`,
         title: '',
         bodyKr: '',
         meta: '',
         photos: [],
+        originalPhotos: [],
         templateId: 'P1_V1',
-        fontFamily: 'Pretendard',
-        themeId: 'white',
-      });
-      setOriginalPhotos([]);
+      }]);
+      setCurrentSlideIndex(0);
+      setFontFamily('Pretendard');
+      setThemeId('white');
     }
   };
 
@@ -213,53 +349,103 @@ export default function Home() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
   };
 
-  const handleExport = async () => {
-    if (rendererRef.current) {
-      try {
-        setIsExporting(true);
-        // React가 UI를 업데이트(생성 중...)할 수 있도록 아주 약간 대기
-        await new Promise(r => setTimeout(r, 100));
-        
-        // Native Canvas rendering avoids all HTML parsing delays
-        const dataUrl = await generateCardImage(data);
-        
-        if (isMobile()) {
-          // 모바일: 팝업 띄우기
-          setResultImage(dataUrl);
-        } else {
-          // PC: 즉시 다운로드
-          const link = document.createElement('a');
-          link.download = `cardnews_${data.templateId}_${Date.now()}.jpg`;
-          link.href = dataUrl;
-          link.click();
-        }
-      } catch (err) {
-        console.error('Export failed:', err);
-        alert('이미지 생성에 실패했습니다.');
-      } finally {
-        setIsExporting(false);
+  const handleExportSingle = async () => {
+    if (!rendererRef.current) return;
+    try {
+      setIsExporting(true);
+      await new Promise(r => setTimeout(r, 100));
+      const dataUrl = await generateCardImage(currentCardData);
+      if (isMobile()) {
+        setResultImages([dataUrl]);
+      } else {
+        const link = document.createElement('a');
+        link.download = `cardnews_${currentSlide.templateId}_page${currentSlideIndex + 1}_${Date.now()}.jpg`;
+        link.href = dataUrl;
+        link.click();
       }
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('이미지 생성에 실패했습니다.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportAll = async () => {
+    try {
+      setIsExportingAll(true);
+      await new Promise(r => setTimeout(r, 100));
+      
+      const generatedUrls: string[] = [];
+      for (let i = 0; i < slides.length; i++) {
+        const slideData: CardData = {
+          ...slides[i],
+          fontFamily,
+          themeId,
+        };
+        const dataUrl = await generateCardImage(slideData);
+        generatedUrls.push(dataUrl);
+      }
+
+      if (isMobile()) {
+        // 모바일: 갤러리 모달 팝업으로 전체 노출
+        setResultImages(generatedUrls);
+      } else {
+        // PC: JSZip 압축 다운로드
+        const zip = new JSZip();
+        for (let i = 0; i < generatedUrls.length; i++) {
+          const base64Data = generatedUrls[i].replace(/^data:image\/jpeg;base64,/, "");
+          zip.file(`cardnews_page_${i + 1}.jpg`, base64Data, { base64: true });
+        }
+        const content = await zip.generateAsync({ type: "blob" });
+        const url = URL.createObjectURL(content);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `cardnews_set_${Date.now()}.zip`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Batch export failed:', err);
+      alert('전체 이미지 저장에 실패했습니다.');
+    } finally {
+      setIsExportingAll(false);
     }
   };
 
   const handleNativeShare = async () => {
-    if (!resultImage) return;
+    if (!resultImages.length) return;
     try {
-      const fetchRes = await fetch(resultImage);
-      const blob = await fetchRes.blob();
-      const file = new File([blob], `cardnews_${data.templateId}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const files: File[] = [];
+      for (let i = 0; i < resultImages.length; i++) {
+        const fetchRes = await fetch(resultImages[i]);
+        const blob = await fetchRes.blob();
+        files.push(new File([blob], `cardnews_page_${i + 1}_${Date.now()}.jpg`, { type: 'image/jpeg' }));
+      }
       
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (navigator.canShare && navigator.canShare({ files })) {
         await navigator.share({
-            files: [file],
-            title: '카드뉴스 이미지 저장'
+          files,
+          title: '카드뉴스 전체 이미지 저장'
         });
-      } else {
-        // Fallback for PC Chrome or unsupported browsers
+      } else if (resultImages.length === 1) {
         const link = document.createElement('a');
-        link.download = file.name;
-        link.href = resultImage;
+        link.download = files[0].name;
+        link.href = resultImages[0];
         link.click();
+      } else {
+        const zip = new JSZip();
+        for (let i = 0; i < resultImages.length; i++) {
+          const base64Data = resultImages[i].replace(/^data:image\/jpeg;base64,/, "");
+          zip.file(`cardnews_page_${i + 1}.jpg`, base64Data, { base64: true });
+        }
+        const content = await zip.generateAsync({ type: "blob" });
+        const url = URL.createObjectURL(content);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `cardnews_set_${Date.now()}.zip`;
+        link.click();
+        URL.revokeObjectURL(url);
       }
     } catch (err) {
       console.log('Share cancelled or failed', err);
@@ -267,7 +453,7 @@ export default function Home() {
   };
 
   const getPhotoSlots = () => {
-    switch (data.templateId) {
+    switch (currentSlide.templateId) {
       case 'P0': return 0;
       case 'P1_V1':
       case 'P1_V2': return 1;
@@ -281,143 +467,222 @@ export default function Home() {
   return (
     <div className="flex flex-col-reverse md:flex-row min-h-screen md:h-screen bg-gray-100 md:overflow-hidden text-sm">
       {/* Sidebar / Editor */}
-      <div className="w-full md:w-[420px] bg-white border-b md:border-b-0 md:border-r border-gray-200 p-6 flex flex-col gap-6 overflow-y-auto z-10 shadow-lg h-auto md:h-full">
-        <h2 className="text-xl font-bold text-gray-800 pb-4 border-b">카드뉴스 에디터</h2>
-        <div className="pb-2">
-          <button 
+      <div className="w-full md:w-[420px] bg-white border-b md:border-b-0 md:border-r border-gray-200 p-6 flex flex-col gap-5 overflow-y-auto z-10 shadow-lg h-auto md:h-full">
+        <div className="flex justify-between items-center pb-3 border-b">
+          <h2 className="text-xl font-bold text-gray-800">카드뉴스 에디터</h2>
+          <div className="text-xs font-bold bg-blue-600 text-white px-3 py-1 rounded-full shadow-sm">
+            {currentSlideIndex + 1} / {slides.length} 페이지
+          </div>
+        </div>
+
+        {/* Page Navigation Bar */}
+        <div className="flex flex-col gap-2.5 bg-gray-50 p-3.5 rounded-lg border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between text-xs font-bold text-gray-700">
+            <span>📄 페이지 선택 (`[1/N]`)</span>
+            <div className="flex gap-1.5">
+              <button
+                onClick={handleDuplicateSlide}
+                className="px-2.5 py-1 bg-white hover:bg-gray-100 border border-gray-300 rounded text-gray-700 transition font-semibold shadow-xs"
+                title="현재 페이지 복제"
+              >
+                📑 복제
+              </button>
+              <button
+                onClick={handleDeleteSlide}
+                disabled={slides.length <= 1}
+                className={`px-2.5 py-1 border rounded transition font-semibold shadow-xs ${
+                  slides.length <= 1 
+                    ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed' 
+                    : 'bg-white hover:bg-red-50 border-gray-300 text-red-600'
+                }`}
+                title="현재 페이지 삭제"
+              >
+                🗑️ 삭제
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5">
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlideIndex(idx)}
+                className={`px-3 py-1.5 rounded-md font-bold text-xs shrink-0 transition ${
+                  currentSlideIndex === idx
+                    ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-300 scale-105'
+                    : 'bg-white hover:bg-gray-200 text-gray-700 border border-gray-300'
+                }`}
+              >
+                {idx + 1} / {slides.length}
+              </button>
+            ))}
+            <button
+              onClick={handleAddSlide}
+              className="px-3 py-1.5 rounded-md font-bold text-xs shrink-0 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 transition flex items-center gap-1 shadow-xs"
+              title="새 페이지 추가"
+            >
+              + 추가
+            </button>
+          </div>
+        </div>
+
+        {/* Advanced Design Settings (Global Theme/Font + Local Template) */}
+        <div>
+          <button
+            data-testid="advanced-settings-toggle"
             onClick={() => setIsAdvancedSettingsOpen(!isAdvancedSettingsOpen)}
-            className="w-full py-2 bg-gray-50 text-gray-700 font-semibold rounded-md border border-gray-200 hover:bg-gray-100 transition flex justify-between items-center px-4"
+            className="w-full py-2.5 bg-gray-50 text-gray-800 font-bold rounded-md border border-gray-200 hover:bg-gray-100 transition flex justify-between items-center px-4 shadow-xs"
           >
-            <span>디자인 고급 설정 (템플릿, 글꼴, 테마)</span>
+            <span>🎨 디자인 설정 (템플릿, 글꼴, 테마)</span>
             <span>{isAdvancedSettingsOpen ? '▲' : '▼'}</span>
           </button>
         </div>
         
         {isAdvancedSettingsOpen && (
-          <div className="flex flex-col gap-6 bg-gray-50 p-4 rounded-md border border-gray-100">
-        <div className="flex flex-col gap-3">
-          <label className="font-semibold text-gray-700">템플릿 선택</label>
-          <div className="grid grid-cols-2 gap-2">
-            {templates.map(tpl => (
-              <button
-                key={tpl.id}
-                onClick={() => setData({ ...data, templateId: tpl.id })}
-                className={`py-2 px-2 text-xs font-semibold rounded-md border text-center transition-colors ${
-                  data.templateId === tpl.id 
-                    ? 'bg-blue-600 text-white border-blue-600' 
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
-                }`}
+          <div className="flex flex-col gap-5 bg-gray-50 p-4 rounded-md border border-gray-200 shadow-inner">
+            {/* Page-specific: Template */}
+            <div className="flex flex-col gap-2.5">
+              <div className="flex justify-between items-center">
+                <label className="font-bold text-gray-700">📌 현재 페이지 템플릿 선택</label>
+                <span className="text-[11px] text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-blue-100">개별 설정</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {templates.map(tpl => (
+                  <button
+                    key={tpl.id}
+                    data-testid={`template-${tpl.id}`}
+                    onClick={() => updateCurrentSlide({ templateId: tpl.id })}
+                    className={`py-2 px-2 text-xs font-semibold rounded-md border text-center transition-colors ${
+                      currentSlide.templateId === tpl.id 
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm font-bold' 
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
+                    }`}
+                  >
+                    {tpl.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <hr className="border-gray-200" />
+
+            {/* Global: Font Family */}
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <label className="font-bold text-gray-700">🌍 전체 슬라이드 글꼴 설정</label>
+                <span className="text-[11px] text-purple-600 font-semibold bg-purple-50 px-2 py-0.5 rounded border border-purple-100">공통 설정</span>
+              </div>
+              <select
+                name="fontFamily"
+                value={fontFamily || 'Pretendard'}
+                onChange={(e) => setFontFamily(e.target.value)}
+                className="p-2 border rounded-md focus:outline-blue-500 bg-white font-medium"
               >
-                {tpl.label}
-              </button>
-            ))}
-          </div>
-        </div>
+                {fontFamilies.map((font) => (
+                  <option key={font.value} value={font.value}>
+                    {font.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-gray-700">글꼴 설정</label>
-          <select
-            name="fontFamily"
-            value={data.fontFamily || 'Pretendard'}
-            onChange={(e) => setData({ ...data, fontFamily: e.target.value })}
-            className="p-2 border rounded-md focus:outline-blue-500 bg-white"
-          >
-            {fontFamilies.map((font) => (
-              <option key={font.value} value={font.value}>
-                {font.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-gray-700">배경 테마 설정</label>
-          <div className="flex flex-wrap gap-2 pt-1">
-            {colorThemes.map((theme) => (
-              <button
-                key={theme.id}
-                onClick={() => setData({ ...data, themeId: theme.id })}
-                className={`w-9 h-9 rounded-full border-2 transition-all cursor-pointer ${
-                  (data.themeId || 'white') === theme.id 
-                    ? 'border-blue-600 scale-110 shadow-md ring-2 ring-blue-300' 
-                    : 'border-gray-300 hover:scale-105'
-                }`}
-                style={{ backgroundColor: theme.bgColor }}
-                title={theme.label}
-              />
-            ))}
-          </div>
-        </div>
+            {/* Global: Theme Color */}
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <label className="font-bold text-gray-700">🌍 전체 슬라이드 테마 컬러</label>
+                <span className="text-[11px] text-purple-600 font-semibold bg-purple-50 px-2 py-0.5 rounded border border-purple-100">공통 설정</span>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {colorThemes.map((theme) => (
+                  <button
+                    key={theme.id}
+                    data-testid={`theme-${theme.id}`}
+                    onClick={() => setThemeId(theme.id)}
+                    className={`w-9 h-9 rounded-full border-2 transition-all cursor-pointer ${
+                      (themeId || 'white') === theme.id 
+                        ? 'border-blue-600 scale-110 shadow-md ring-2 ring-blue-300' 
+                        : 'border-gray-300 hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: theme.bgColor }}
+                    title={theme.label}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
-
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-gray-700">텍스트 입력</label>
+        {/* Text Inputs */}
+        <div className="flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <label className="font-bold text-gray-700">✍️ 텍스트 입력 ({currentSlideIndex + 1}번 페이지)</label>
+          </div>
           <div className="relative">
             <input 
               type="text" 
               name="title" 
-              value={data.title} 
+              value={currentSlide.title} 
               onChange={handleTextChange} 
               placeholder="제목을 입력해보세요" 
-              className="p-2 w-full pr-8 border rounded-md focus:outline-blue-500"
+              className="p-2.5 w-full pr-8 border rounded-md focus:outline-blue-500 bg-gray-50/50"
             />
-            {data.title && (
-              <button onClick={() => setData({...data, title: ''})} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-800 p-1 font-bold">✕</button>
+            {currentSlide.title && (
+              <button onClick={() => updateCurrentSlide({ title: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-800 p-1 font-bold">✕</button>
             )}
           </div>
           <div className="relative">
             <textarea 
               name="bodyKr" 
-              value={data.bodyKr} 
+              value={currentSlide.bodyKr} 
               onChange={handleTextChange} 
               placeholder="사진에 어울리는 본문을 입력해보세요." 
               rows={4}
-              className="p-2 w-full pr-8 border rounded-md resize-none focus:outline-blue-500"
+              className="p-2.5 w-full pr-8 border rounded-md resize-none focus:outline-blue-500 bg-gray-50/50"
             />
-            {data.bodyKr && (
-              <button onClick={() => setData({...data, bodyKr: ''})} className="absolute right-3 top-2 text-gray-400 hover:text-gray-800 p-1 font-bold">✕</button>
+            {currentSlide.bodyKr && (
+              <button onClick={() => updateCurrentSlide({ bodyKr: '' })} className="absolute right-3 top-2 text-gray-400 hover:text-gray-800 p-1 font-bold">✕</button>
             )}
           </div>
           <div className="relative">
             <input 
               type="text" 
               name="meta" 
-              value={data.meta} 
+              value={currentSlide.meta} 
               onChange={handleTextChange} 
               placeholder="닉네임 또는 날짜를 입력해보세요." 
-              className="p-2 w-full pr-8 border rounded-md focus:outline-blue-500"
+              className="p-2.5 w-full pr-8 border rounded-md focus:outline-blue-500 bg-gray-50/50"
             />
-            {data.meta && (
-              <button onClick={() => setData({...data, meta: ''})} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-800 p-1 font-bold">✕</button>
+            {currentSlide.meta && (
+              <button onClick={() => updateCurrentSlide({ meta: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-800 p-1 font-bold">✕</button>
             )}
           </div>
         </div>
 
+        {/* Photo Uploads */}
         {getPhotoSlots() > 0 && (
           <div className="flex flex-col gap-3">
-            <label className="font-semibold text-gray-700">사진 업로드</label>
+            <label className="font-bold text-gray-700">🖼️ 사진 업로드 ({currentSlideIndex + 1}번 페이지)</label>
             {Array.from({ length: getPhotoSlots() }).map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <label className="flex-1 flex items-center justify-center p-3 border border-dashed border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 cursor-pointer text-gray-600 transition">
-                  <ImageIcon size={16} className="mr-2"/> 사진 {i + 1} 첨부
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={(e) => handlePhotoUpload(e, i)} 
-                    className="hidden" 
+                <label className="flex-1 flex items-center justify-center p-3 border border-dashed border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 cursor-pointer text-gray-700 font-medium transition">
+                  <ImageIcon size={16} className="mr-2 text-blue-600"/> 사진 {i + 1} 첨부
+                  <input
+                    id={`photo-upload-${i}`}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handlePhotoUpload(e, i)}
+                    className="hidden"
                   />
                 </label>
-                {data.photos[i] && (
+                {currentSlide.photos[i] && (
                   <div className="flex items-center gap-2">
                     <div className="w-10 h-10 rounded overflow-hidden border">
-                      <img src={data.photos[i]} className="w-full h-full object-cover" alt="preview" />
+                      <img src={currentSlide.photos[i]} className="w-full h-full object-cover" alt="preview" />
                     </div>
-                    {originalPhotos[i] && (
+                    {currentSlide.originalPhotos[i] && (
                       <button 
                         onClick={() => { setCurrentCropIndex(i); setIsCropModalOpen(true); setCrop(undefined); }}
-                        className="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded"
+                        className="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded font-semibold"
                       >
                         크롭 수정
                       </button>
@@ -429,23 +694,35 @@ export default function Home() {
           </div>
         )}
 
-        
-        <div className="sticky bottom-0 bg-white pt-4 pb-2 mt-auto z-20 border-t md:border-t-0 flex gap-2">
-          <button 
+        {/* Sticky Footer Buttons */}
+        <div className="sticky bottom-0 bg-white pt-4 pb-2 mt-auto z-20 border-t md:border-t-0 flex flex-col gap-2">
+          <div className="flex gap-2">
+            <button
+              data-testid="export-single-button"
+              onClick={handleExportSingle}
+              disabled={isExporting || isExportingAll}
+              className={`flex-1 ${isExporting ? 'bg-gray-500 cursor-not-allowed' : 'bg-gray-800 hover:bg-gray-900'} text-white font-bold py-2.5 rounded-md flex justify-center items-center gap-1.5 transition text-xs`}
+            >
+              <Download size={15} /> {isExporting ? '생성 중...' : `현재 장 (${currentSlideIndex + 1}/${slides.length}) 저장`}
+            </button>
+            <button
+              data-testid="export-all-button"
+              onClick={handleExportAll}
+              disabled={isExporting || isExportingAll}
+              className={`flex-1 ${isExportingAll ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold py-2.5 rounded-md flex justify-center items-center gap-1.5 transition text-xs shadow-sm`}
+            >
+              <Download size={15} /> {isExportingAll ? '압축 중...' : `전체 (${slides.length}장) 일괄 저장`}
+            </button>
+          </div>
+          <button
+            data-testid="reset-button"
             onClick={handleReset}
-            className="w-1/3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-md flex justify-center items-center transition text-sm"
+            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-1.5 rounded-md transition text-xs text-center"
           >
-            새로 만들기
-          </button>
-          <button 
-            onClick={handleExport}
-            disabled={isExporting}
-            className={`w-2/3 ${isExporting ? 'bg-gray-500 cursor-not-allowed' : 'bg-black hover:bg-gray-800'} text-white font-bold py-3 rounded-md flex justify-center items-center gap-2 transition`}
-          >
-            <Download size={18} /> {isExporting ? '생성 중...' : '이미지로 저장하기'}
+            초기화 (새로 만들기)
           </button>
         </div>
-</div>
+      </div>
 
       {/* Preview Area */}
       <div 
@@ -454,27 +731,38 @@ export default function Home() {
       >
         <div style={{ width: 1080 * previewScale, height: 1350 * previewScale }} className="relative shadow-2xl bg-white border border-gray-300">
           <div style={{ transform: `scale(${previewScale})`, transformOrigin: 'top left', width: 1080, height: 1350 }}>
-            <CardRenderer data={data} rendererRef={rendererRef} onPhotoClick={(idx) => document.getElementById(`photo-upload-${idx}`)?.click()} />
+            <CardRenderer data={currentCardData} rendererRef={rendererRef} onPhotoClick={(idx) => document.getElementById(`photo-upload-${idx}`)?.click()} />
           </div>
         </div>
       </div>
 
-            {/* Result Export Modal */}
-      {resultImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 flex-col">
-          <div className="bg-white rounded-xl p-6 w-full max-w-[420px] flex flex-col items-center shadow-2xl">
-            <h3 className="font-extrabold text-2xl mb-2 text-gray-900">✨ 완성되었습니다!</h3>
-            <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-sm text-center font-medium mb-5 w-full">
-              모바일의 경우 이미지를 <b>길게 눌러서</b><br/>'사진 앱에 저장'을 선택해 주세요.
+      {/* Result Export Modal */}
+      {resultImages.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 flex-col overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-[480px] flex flex-col items-center shadow-2xl my-auto max-h-[90vh]">
+            <h3 className="font-extrabold text-2xl mb-1 text-gray-900">
+              ✨ {resultImages.length > 1 ? `총 ${resultImages.length}장 완성되었습니다!` : '완성되었습니다!'}
+            </h3>
+            <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-xs text-center font-medium mb-4 w-full">
+              {resultImages.length > 1 ? (
+                <span>모바일에서는 각 사진을 <b>길게 눌러서</b> 개별 저장하거나,<br/>아래 <b>'기기에 일괄 저장/공유'</b> 버튼을 눌러주세요.</span>
+              ) : (
+                <span>모바일의 경우 이미지를 <b>길게 눌러서</b><br/>'사진 앱에 저장'을 선택해 주세요.</span>
+              )}
             </div>
             
-            <div className="w-full bg-gray-100 border-2 border-gray-200 rounded-lg overflow-hidden max-h-[50vh] flex justify-center items-center shadow-inner">
-              <img src={resultImage} alt="완성된 카드뉴스" className="max-w-full max-h-[50vh] object-contain pointer-events-auto select-auto" style={{ WebkitTouchCallout: 'default' }} />
+            <div className="w-full overflow-y-auto max-h-[50vh] flex flex-col gap-4 p-2 bg-gray-100 border rounded-lg shadow-inner">
+              {resultImages.map((imgUrl, idx) => (
+                <div key={idx} className="flex flex-col items-center bg-white p-2 rounded shadow">
+                  <div className="text-xs font-bold text-gray-500 mb-1">{idx + 1} / {resultImages.length} 페이지</div>
+                  <img src={imgUrl} alt={`카드뉴스 ${idx + 1} 페이지`} className="max-w-full max-h-[45vh] object-contain pointer-events-auto select-auto" style={{ WebkitTouchCallout: 'default' }} />
+                </div>
+              ))}
             </div>
             
-            <div className="flex gap-3 w-full mt-6">
+            <div className="flex gap-3 w-full mt-5 shrink-0">
               <button 
-                onClick={() => setResultImage(null)}
+                onClick={() => setResultImages([])}
                 className="flex-1 py-3 rounded-lg border-2 border-gray-300 font-bold text-gray-700 hover:bg-gray-100 transition"
               >
                 닫기
@@ -483,7 +771,7 @@ export default function Home() {
                 onClick={handleNativeShare}
                 className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition"
               >
-                <Download size={18} /> 기기에 저장
+                <Download size={18} /> {resultImages.length > 1 ? '기기에 일괄 저장/공유' : '기기에 저장'}
               </button>
             </div>
           </div>
@@ -491,7 +779,7 @@ export default function Home() {
       )}
 
       {/* Crop Modal */}
-      {isCropModalOpen && originalPhotos[currentCropIndex] && (
+      {isCropModalOpen && currentSlide.originalPhotos[currentCropIndex] && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
           <div className="bg-white rounded-lg p-4 max-w-full max-h-full flex flex-col items-center">
             <h3 className="font-bold text-lg mb-4 text-gray-800">이미지 노출 영역 지정 (크롭)</h3>
@@ -503,7 +791,7 @@ export default function Home() {
               >
                 <img 
                   ref={imgRef}
-                  src={originalPhotos[currentCropIndex]} 
+                  src={currentSlide.originalPhotos[currentCropIndex]} 
                   alt="crop" 
                   className="max-w-full max-h-[60vh]"
                 />
@@ -516,7 +804,8 @@ export default function Home() {
               >
                 취소
               </button>
-              <button 
+              <button
+                data-testid="crop-confirm-button"
                 onClick={getCroppedImg}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold"
               >
