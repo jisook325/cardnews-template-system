@@ -5,7 +5,8 @@ import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import CardRenderer, { CardData, TemplateId, themes } from '@/components/CardRenderer';
 import { generateCardImage } from '@/lib/canvasExport';
-import { Download, ImageIcon } from 'lucide-react';
+import { generateCardSvg } from '@/lib/svgExport';
+import { Download, ImageIcon, Save, FolderOpen, FileCode } from 'lucide-react';
 import JSZip from 'jszip';
 
 export interface SlideItem {
@@ -46,7 +47,9 @@ export default function Home() {
   const [resultImages, setResultImages] = useState<string[]>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingAll, setIsExportingAll] = useState(false);
+  const [isExportingSvg, setIsExportingSvg] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const rendererRef = useRef<HTMLDivElement>(null);
 
   const currentSlide = slides[currentSlideIndex] || slides[0] || {
@@ -96,7 +99,6 @@ export default function Home() {
             setCurrentSlideIndex(Math.min(parsed.currentSlideIndex, parsed.slides.length - 1));
           }
         } else if (parsed.data) {
-          // Backward compatibility migration from single slide data
           setSlides([{
             id: 'slide-1',
             title: parsed.data.title || '',
@@ -219,6 +221,60 @@ export default function Home() {
       setSlides(prev => prev.filter((_, idx) => idx !== currentSlideIndex));
       setCurrentSlideIndex(prev => Math.max(0, prev - 1));
     }
+  };
+
+  const handleSaveProject = () => {
+    try {
+      const projectData = {
+        version: '1.0',
+        slides,
+        currentSlideIndex,
+        fontFamily,
+        themeId,
+        savedAt: new Date().toISOString()
+      };
+      const jsonString = JSON.stringify(projectData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `cardnews_project_${Date.now()}.cardnews`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Save project failed:', err);
+      alert('프로젝트 저장에 실패했습니다.');
+    }
+  };
+
+  const handleLoadProject = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const content = ev.target?.result as string;
+        const parsed = JSON.parse(content);
+        if (parsed.slides && Array.isArray(parsed.slides) && parsed.slides.length > 0) {
+          setSlides(parsed.slides);
+          if (parsed.fontFamily) setFontFamily(parsed.fontFamily);
+          if (parsed.themeId) setThemeId(parsed.themeId);
+          if (typeof parsed.currentSlideIndex === 'number') {
+            setCurrentSlideIndex(Math.min(parsed.currentSlideIndex, parsed.slides.length - 1));
+          } else {
+            setCurrentSlideIndex(0);
+          }
+          alert(`✨ 프로젝트 파일을 성공적으로 불러왔습니다! (총 ${parsed.slides.length}장)`);
+        } else {
+          alert('올바르지 않은 프로젝트 파일 포맷입니다.');
+        }
+      } catch (err) {
+        console.error('Load project error:', err);
+        alert('프로젝트 파일을 읽는 중 오류가 발생했습니다.');
+      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsText(file);
   };
 
   const resizeImage = (file: File): Promise<string> => {
@@ -388,10 +444,8 @@ export default function Home() {
       }
 
       if (isMobile()) {
-        // 모바일: 갤러리 모달 팝업으로 전체 노출
         setResultImages(generatedUrls);
       } else {
-        // PC: JSZip 압축 다운로드
         const zip = new JSZip();
         for (let i = 0; i < generatedUrls.length; i++) {
           const base64Data = generatedUrls[i].replace(/^data:image\/jpeg;base64,/, "");
@@ -410,6 +464,47 @@ export default function Home() {
       alert('전체 이미지 저장에 실패했습니다.');
     } finally {
       setIsExportingAll(false);
+    }
+  };
+
+  const handleExportSvg = async () => {
+    try {
+      setIsExportingSvg(true);
+      await new Promise(r => setTimeout(r, 100));
+
+      if (slides.length === 1) {
+        const svgString = generateCardSvg(currentCardData);
+        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `cardnews_${currentSlide.templateId}_figma.svg`;
+        link.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const zip = new JSZip();
+        for (let i = 0; i < slides.length; i++) {
+          const slideData: CardData = {
+            ...slides[i],
+            fontFamily,
+            themeId,
+          };
+          const svgString = generateCardSvg(slideData);
+          zip.file(`cardnews_page_${i + 1}_figma.svg`, svgString);
+        }
+        const content = await zip.generateAsync({ type: "blob" });
+        const url = URL.createObjectURL(content);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `cardnews_figma_svg_set_${Date.now()}.zip`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('SVG export failed:', err);
+      alert('피그마용 SVG 파일 생성에 실패했습니다.');
+    } finally {
+      setIsExportingSvg(false);
     }
   };
 
@@ -475,7 +570,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Page Navigation Bar */}
+        {/* Page Navigation Bar & Project Save/Restore */}
         <div className="flex flex-col gap-2.5 bg-gray-50 p-3.5 rounded-lg border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between text-xs font-bold text-gray-700">
             <span>📄 페이지 선택 (`[1/N]`)</span>
@@ -523,6 +618,36 @@ export default function Home() {
             >
               + 추가
             </button>
+          </div>
+
+          {/* Project Backup & Restore Bar */}
+          <div className="flex items-center justify-between pt-2.5 border-t border-gray-200 mt-0.5">
+            <span className="text-[11px] font-bold text-gray-500 flex items-center gap-1">
+              💾 프로젝트 파일 백업
+            </span>
+            <div className="flex gap-1.5">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".cardnews,.json"
+                onChange={handleLoadProject}
+                className="hidden"
+              />
+              <button
+                onClick={handleSaveProject}
+                className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-300 rounded font-bold text-xs flex items-center gap-1 shadow-xs transition"
+                title="나중에 수정할 수 있도록 프로젝트 파일(.cardnews) 저장"
+              >
+                <Save size={13} /> 저장 (`.cardnews`)
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-2.5 py-1 bg-white hover:bg-blue-50 text-blue-700 border border-blue-300 rounded font-bold text-xs flex items-center gap-1 shadow-xs transition"
+                title="저장해둔 프로젝트 파일(.cardnews) 불러오기"
+              >
+                <FolderOpen size={13} /> 불러오기
+              </button>
+            </div>
           </div>
         </div>
 
@@ -700,7 +825,7 @@ export default function Home() {
             <button
               data-testid="export-single-button"
               onClick={handleExportSingle}
-              disabled={isExporting || isExportingAll}
+              disabled={isExporting || isExportingAll || isExportingSvg}
               className={`flex-1 ${isExporting ? 'bg-gray-500 cursor-not-allowed' : 'bg-gray-800 hover:bg-gray-900'} text-white font-bold py-2.5 rounded-md flex justify-center items-center gap-1.5 transition text-xs`}
             >
               <Download size={15} /> {isExporting ? '생성 중...' : `현재 장 (${currentSlideIndex + 1}/${slides.length}) 저장`}
@@ -708,16 +833,26 @@ export default function Home() {
             <button
               data-testid="export-all-button"
               onClick={handleExportAll}
-              disabled={isExporting || isExportingAll}
+              disabled={isExporting || isExportingAll || isExportingSvg}
               className={`flex-1 ${isExportingAll ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold py-2.5 rounded-md flex justify-center items-center gap-1.5 transition text-xs shadow-sm`}
             >
               <Download size={15} /> {isExportingAll ? '압축 중...' : `전체 (${slides.length}장) 일괄 저장`}
             </button>
           </div>
+          
+          <button
+            data-testid="export-svg-button"
+            onClick={handleExportSvg}
+            disabled={isExporting || isExportingAll || isExportingSvg}
+            className={`w-full ${isExportingSvg ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-2.5 rounded-md flex justify-center items-center gap-1.5 transition text-xs shadow-sm`}
+          >
+            <FileCode size={15} /> {isExportingSvg ? 'SVG 생성 중...' : `🎨 피그마 수정용 SVG (${slides.length > 1 ? '전체 ZIP' : '1장'}) 벡터 다운로드`}
+          </button>
+
           <button
             data-testid="reset-button"
             onClick={handleReset}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-1.5 rounded-md transition text-xs text-center"
+            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-1.5 rounded-md transition text-xs text-center mt-0.5"
           >
             초기화 (새로 만들기)
           </button>
