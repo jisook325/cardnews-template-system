@@ -94,11 +94,11 @@ export function generateCardSvg(data: CardData): string {
   let elements: string[] = [];
 
   if (data.templateId === 'P0') {
-    const titleRes = renderMultilineSvgText(data.title, 51, 51 + 56, 64, 76, 'bold', theme.primaryTextColor, fontFamily, 5);
+    const titleRes = renderMultilineSvgText(data.title, 51, 51 + 56, 64, 76, 700, theme.primaryTextColor, fontFamily, 5);
     elements.push(titleRes.svg);
 
-    const bodyY = 51 + Math.max(1, titleRes.linesDrawn) * 76 + 40 + 36;
-    const bodyRes = renderMultilineSvgText(data.bodyKr, 51, bodyY, 40, 64, 'normal', theme.secondaryTextColor, fontFamily, 12);
+    const bodyY = 51 + Math.max(1, titleRes.linesDrawn) * 76 + 48 + 36;
+    const bodyRes = renderMultilineSvgText(data.bodyKr, 51, bodyY, 40, 64, 400, theme.secondaryTextColor, fontFamily, 12);
     elements.push(bodyRes.svg);
 
     const metaSvg = `<text x="51" y="${1350 - 35 - 16}" font-family="${escapeXml(fontFamily)}, sans-serif" font-size="28" font-weight="500" fill="${theme.metaTextColor}">${escapeXml(data.meta)}</text>`;
@@ -107,19 +107,20 @@ export function generateCardSvg(data: CardData): string {
   else if (data.templateId === 'P1_V1') {
     elements.push(renderPhotoSlot('clip-p1v1-0', imgs[0], 35, 35, 768, 1024, '사진 1'));
     
-    elements.push(renderMultilineSvgText(data.title, 51, 1084 + 56, 56, 67, 'bold', theme.primaryTextColor, fontFamily, 1).svg);
-    elements.push(renderMultilineSvgText(data.bodyKr, 51, 1084 + 56 + 16 + 36, 36, 50, 'normal', theme.secondaryTextColor, fontFamily, 2).svg);
+    elements.push(renderMultilineSvgText(data.title, 51, 1084 + 56, 56, 67, 700, theme.primaryTextColor, fontFamily, 1).svg);
+    // Body: increased from +16+36 to +72+24 to match screen spacious mb-[16px]
+    elements.push(renderMultilineSvgText(data.bodyKr, 51, 1084 + 72 + 24 + 28, 36, 50, 400, theme.secondaryTextColor, fontFamily, 2).svg);
     
     elements.push(`<text x="51" y="${1084 + 230 - 16}" font-family="${escapeXml(fontFamily)}, sans-serif" font-size="28" font-weight="500" fill="${theme.metaTextColor}">${escapeXml(data.meta)}</text>`);
   } 
   else if (data.templateId === 'P1_V2') {
     elements.push(renderPhotoSlot('clip-p1v2-0', imgs[0], 35, 35, 1010, 450, '사진 1'));
 
-    const titleRes = renderMultilineSvgText(data.title, 51, 510 + 56, 64, 76, 'bold', theme.primaryTextColor, fontFamily, 3);
+    const titleRes = renderMultilineSvgText(data.title, 51, 510 + 56, 64, 76, 700, theme.primaryTextColor, fontFamily, 3);
     elements.push(titleRes.svg);
 
-    const bodyY = 510 + Math.max(1, titleRes.linesDrawn) * 76 + 16 + 36;
-    elements.push(renderMultilineSvgText(data.bodyKr, 51, bodyY, 40, 64, 'normal', theme.secondaryTextColor, fontFamily, 10).svg);
+    const bodyY = 510 + Math.max(1, titleRes.linesDrawn) * 76 + 34 + 36;
+    elements.push(renderMultilineSvgText(data.bodyKr, 51, bodyY, 40, 64, 400, theme.secondaryTextColor, fontFamily, 10).svg);
 
     elements.push(`<text x="51" y="${510 + 804 - 16}" font-family="${escapeXml(fontFamily)}, sans-serif" font-size="28" font-weight="500" fill="${theme.metaTextColor}">${escapeXml(data.meta)}</text>`);
   } 
@@ -127,8 +128,8 @@ export function generateCardSvg(data: CardData): string {
     elements.push(renderPhotoSlot('clip-p2-0', imgs[0], 35, 35, 1010, 450, '사진 1'));
     elements.push(renderPhotoSlot('clip-p2-1', imgs[1], 35, 510, 1010, 445, '사진 2'));
 
-    elements.push(renderMultilineSvgText(data.title, 51, 980 + 56, 56, 67, 'bold', theme.primaryTextColor, fontFamily, 1).svg);
-    elements.push(renderMultilineSvgText(data.bodyKr, 51, 980 + 56 + 16 + 36, 36, 54, 'normal', theme.secondaryTextColor, fontFamily, 3).svg);
+    elements.push(renderMultilineSvgText(data.title, 51, 980 + 56, 56, 67, 700, theme.primaryTextColor, fontFamily, 1).svg);
+    elements.push(renderMultilineSvgText(data.bodyKr, 51, 980 + 72 + 24 + 28, 36, 54, 400, theme.secondaryTextColor, fontFamily, 3).svg);
 
     elements.push(`<text x="51" y="${980 + 334 - 16}" font-family="${escapeXml(fontFamily)}, sans-serif" font-size="28" font-weight="500" fill="${theme.metaTextColor}">${escapeXml(data.meta)}</text>`);
   } 
@@ -137,8 +138,8 @@ export function generateCardSvg(data: CardData): string {
     elements.push(renderPhotoSlot('clip-p3-1', imgs[1], 35, 510, 495, 445, '사진 2'));
     elements.push(renderPhotoSlot('clip-p3-2', imgs[2], 550, 510, 495, 445, '사진 3'));
 
-    elements.push(renderMultilineSvgText(data.title, 51, 980 + 56, 56, 67, 'bold', theme.primaryTextColor, fontFamily, 1).svg);
-    elements.push(renderMultilineSvgText(data.bodyKr, 51, 980 + 56 + 16 + 36, 36, 54, 'normal', theme.secondaryTextColor, fontFamily, 3).svg);
+    elements.push(renderMultilineSvgText(data.title, 51, 980 + 56, 56, 67, 700, theme.primaryTextColor, fontFamily, 1).svg);
+    elements.push(renderMultilineSvgText(data.bodyKr, 51, 980 + 72 + 24 + 28, 36, 54, 400, theme.secondaryTextColor, fontFamily, 3).svg);
 
     elements.push(`<text x="51" y="${980 + 334 - 16}" font-family="${escapeXml(fontFamily)}, sans-serif" font-size="28" font-weight="500" fill="${theme.metaTextColor}">${escapeXml(data.meta)}</text>`);
   } 
@@ -148,8 +149,8 @@ export function generateCardSvg(data: CardData): string {
     elements.push(renderPhotoSlot('clip-p4-2', imgs[2], 35, 550, 495, 495, '사진 3'));
     elements.push(renderPhotoSlot('clip-p4-3', imgs[3], 550, 550, 495, 495, '사진 4'));
 
-    elements.push(renderMultilineSvgText(data.title, 51, 1065 + 48, 48, 57, 'bold', theme.primaryTextColor, fontFamily, 1).svg);
-    elements.push(renderMultilineSvgText(data.bodyKr, 51, 1065 + 48 + 16 + 32, 32, 44, 'normal', theme.secondaryTextColor, fontFamily, 2).svg);
+    elements.push(renderMultilineSvgText(data.title, 51, 1065 + 48, 48, 57, 700, theme.primaryTextColor, fontFamily, 1).svg);
+    elements.push(renderMultilineSvgText(data.bodyKr, 51, 1065 + 60 + 22 + 24, 32, 44, 400, theme.secondaryTextColor, fontFamily, 2).svg);
 
     elements.push(`<text x="51" y="${1065 + 249 - 16}" font-family="${escapeXml(fontFamily)}, sans-serif" font-size="24" font-weight="500" fill="${theme.metaTextColor}">${escapeXml(data.meta)}</text>`);
   }

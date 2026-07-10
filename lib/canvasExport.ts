@@ -144,13 +144,13 @@ export async function generateCardImage(data: CardData): Promise<string> {
     
     // Title
     ctx.fillStyle = theme.primaryTextColor;
-    ctx.font = `bold 64px ${fontFamily}`;
+    ctx.font = `700 64px ${fontFamily}`;
     let y = drawTextKr(ctx, data.title, 51, 51, 1010 - 32, 76, 5); // 76 roughly 64 * 1.2
     
-    // Body
-    y += 40;
+    // Body (increase gap from 40 to 48 for spacious screen match)
+    y += 48;
     ctx.fillStyle = theme.secondaryTextColor;
-    ctx.font = `40px ${fontFamily}`;
+    ctx.font = `400 40px ${fontFamily}`;
     drawTextKr(ctx, data.bodyKr, 51, y, 1010 - 32, 64, 12);
     
     // Meta (bottom anchored)
@@ -162,12 +162,13 @@ export async function generateCardImage(data: CardData): Promise<string> {
     drawSlot(imgs[0], 35, 35, 768, 1024, placeholderColor1, '사진 1');
     
     ctx.fillStyle = theme.primaryTextColor;
-    ctx.font = `bold 56px ${fontFamily}`;
+    ctx.font = `700 56px ${fontFamily}`;
     drawTextKr(ctx, data.title, 35 + 16, 1084 + 16, 1010 - 32, 67, 1);
     
     ctx.fillStyle = theme.secondaryTextColor;
-    ctx.font = `36px ${fontFamily}`;
-    drawTextKr(ctx, data.bodyKr, 35 + 16, 1084 + 16 + 56 + 16, 1010 - 32, 50, 2);
+    ctx.font = `400 36px ${fontFamily}`;
+    // Body: title y (1100) + title height (~70) + margin (26) = 1196 (spacious match with screen mb-[16px])
+    drawTextKr(ctx, data.bodyKr, 35 + 16, 1084 + 16 + 72 + 24, 1010 - 32, 50, 2);
     
     ctx.fillStyle = theme.metaTextColor;
     ctx.font = `500 28px ${fontFamily}`;
@@ -177,15 +178,15 @@ export async function generateCardImage(data: CardData): Promise<string> {
     drawSlot(imgs[0], 35, 35, 1010, 450, placeholderColor1, '사진 1');
     
     const bx = 35, by = 510;
-    // Removed boxBgColor for P1_V2 to follow CSS inheritance (transparent)
     
     ctx.fillStyle = theme.primaryTextColor;
-    ctx.font = `bold 64px ${fontFamily}`;
+    ctx.font = `700 64px ${fontFamily}`;
     let y = drawTextKr(ctx, data.title, bx + 16, by + 16, 1010 - 32, 76, 3);
     
     ctx.fillStyle = theme.secondaryTextColor;
-    ctx.font = `40px ${fontFamily}`;
-    drawTextKr(ctx, data.bodyKr, bx + 16, y + 16, 1010 - 32, 64, 10);
+    ctx.font = `400 40px ${fontFamily}`;
+    // Body: match screen mb-[30px] (increase from y + 16 to y + 34)
+    drawTextKr(ctx, data.bodyKr, bx + 16, y + 34, 1010 - 32, 64, 10);
     
     ctx.fillStyle = theme.metaTextColor;
     ctx.font = `500 28px ${fontFamily}`;
@@ -197,12 +198,13 @@ export async function generateCardImage(data: CardData): Promise<string> {
     
     const bx = 35, by = 980;
     ctx.fillStyle = theme.primaryTextColor;
-    ctx.font = `bold 56px ${fontFamily}`;
+    ctx.font = `700 56px ${fontFamily}`;
     drawTextKr(ctx, data.title, bx + 16, by + 16, 1010 - 32, 67, 1);
     
     ctx.fillStyle = theme.secondaryTextColor;
-    ctx.font = `36px ${fontFamily}`;
-    drawTextKr(ctx, data.bodyKr, bx + 16, by + 16 + 56 + 16, 1010 - 32, 54, 3);
+    ctx.font = `400 36px ${fontFamily}`;
+    // Body: title y (996) + title height (~70) + margin (26) = 1092
+    drawTextKr(ctx, data.bodyKr, bx + 16, by + 16 + 72 + 24, 1010 - 32, 54, 3);
     
     ctx.fillStyle = theme.metaTextColor;
     ctx.font = `500 28px ${fontFamily}`;
@@ -215,12 +217,12 @@ export async function generateCardImage(data: CardData): Promise<string> {
     
     const bx = 35, by = 980;
     ctx.fillStyle = theme.primaryTextColor;
-    ctx.font = `bold 56px ${fontFamily}`;
+    ctx.font = `700 56px ${fontFamily}`;
     drawTextKr(ctx, data.title, bx + 16, by + 16, 1010 - 32, 67, 1);
     
     ctx.fillStyle = theme.secondaryTextColor;
-    ctx.font = `36px ${fontFamily}`;
-    drawTextKr(ctx, data.bodyKr, bx + 16, by + 16 + 56 + 16, 1010 - 32, 54, 3);
+    ctx.font = `400 36px ${fontFamily}`;
+    drawTextKr(ctx, data.bodyKr, bx + 16, by + 16 + 72 + 24, 1010 - 32, 54, 3);
     
     ctx.fillStyle = theme.metaTextColor;
     ctx.font = `500 28px ${fontFamily}`;
@@ -234,12 +236,12 @@ export async function generateCardImage(data: CardData): Promise<string> {
     
     const bx = 35, by = 1065;
     ctx.fillStyle = theme.primaryTextColor;
-    ctx.font = `bold 48px ${fontFamily}`;
+    ctx.font = `700 48px ${fontFamily}`;
     drawTextKr(ctx, data.title, bx + 16, by + 16, 1010 - 32, 57, 1);
     
     ctx.fillStyle = theme.secondaryTextColor;
-    ctx.font = `32px ${fontFamily}`;
-    drawTextKr(ctx, data.bodyKr, bx + 16, by + 16 + 48 + 16, 1010 - 32, 44, 2);
+    ctx.font = `400 32px ${fontFamily}`;
+    drawTextKr(ctx, data.bodyKr, bx + 16, by + 16 + 60 + 22, 1010 - 32, 44, 2);
     
     ctx.fillStyle = theme.metaTextColor;
     ctx.font = `500 24px ${fontFamily}`;
